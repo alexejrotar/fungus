@@ -5,12 +5,19 @@ class Renderer {
     }
 
     hexagon(row, column, color = "#000", sides = [0, 1, 2, 3, 4, 5]) {
-        const ctx = this.ctx;
         const { sin, cos, PI } = Math;
         const r = this.radius;
 
         const x = r + column * (r + r * cos(PI / 3));
         const y = row * 2 * r * sin(PI / 3) + r + (column % 2) * r * sin(PI / 3);
+
+        this.hexagonXY(x, y, color, sides);
+    }
+
+    hexagonXY(x, y, color = "#000", sides = [0, 1, 2, 3, 4, 5]) {
+        const ctx = this.ctx;
+        const { sin, cos, PI } = Math;
+        const r = this.radius;
 
         ctx.strokeStyle = color;
 
@@ -27,11 +34,10 @@ class Renderer {
         ctx.stroke();
     }
 
-    grid(numRows, numCols, color = "#000") {
-        for (let row = 0; row < numRows; row++) {
-            for (let col = 0; col < numCols; col++) {
-                this.hexagon(row, col, color);
-            }
+    grid(points, color = "#000") {
+        for (const point of points) {
+            console.log(color);
+            this.hexagonXY(point.x, point.y, color);
         }
     }
 
