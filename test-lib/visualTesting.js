@@ -1,6 +1,8 @@
 class VisualTestRunner {
-    constructor() {
+    constructor(width = 300, height = 150) {
         this.tests = {};
+        this.width = width;
+        this.height = height;
     }
 
     test(name, testCode) {
@@ -15,9 +17,10 @@ class VisualTestRunner {
             testOutput.appendChild(nameElement);
 
             const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
+            canvas.width = this.width;
+            canvas.height = this.height;
             testOutput.appendChild(canvas);
-            testCode.call(null, ctx);
+            testCode.call(null, canvas);
         })
     }
 }
