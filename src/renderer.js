@@ -4,7 +4,7 @@ class Renderer {
         this.radius = radius;
     }
 
-    hexagon(row, column, color = "#000") {
+    hexagon(row, column, color = "#000", sides = [0, 1, 2, 3, 4, 5]) {
         const ctx = this.ctx;
         const { sin, cos, PI } = Math;
         const r = this.radius;
@@ -15,10 +15,15 @@ class Renderer {
         ctx.strokeStyle = color;
 
         ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-            ctx.lineTo(x + r * cos(i * PI / 3), y + r * sin(i * PI / 3));
+        for (let i = 0; i <= 6; i++) {
+            const xPos = x + r * cos(i * PI / 3);
+            const yPos = y + r * sin(i * PI / 3);
+            if (!sides.includes(i - 1)) {
+                ctx.moveTo(xPos, yPos);
+            } else {
+                ctx.lineTo(xPos, yPos);
+            }
         }
-        ctx.closePath();
         ctx.stroke();
     }
 
@@ -27,6 +32,17 @@ class Renderer {
             for (let col = 0; col < numCols; col++) {
                 this.hexagon(row, col, color);
             }
+        }
+    }
+
+    molecule(molecule) {
+        for (const part of molecule.shape) {
+            this.hexagon(
+                part.row + molecule.position.row,
+                part.col + molecule.position.col,
+                "#000",
+                part.sides
+            );
         }
     }
 }
