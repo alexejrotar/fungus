@@ -5,10 +5,6 @@ class Molecule {
         this.transform = transform;
     }
 
-    isAt(row, col) {
-        return this.shape.some(part => part.row === row && part.col === col);
-    }
-
     getPartAt(row, col) {
         return this.shape.find(part => {
             const partCoordinates = this.getCorrectedCoordinates(part.row, part.col);
@@ -48,15 +44,18 @@ class Molecule {
         return new Molecule(this.shape, this.grid, { source, target });
     }
 
+    overlaps(molecule) {
+        return this.shape.some(part => {
+            const partCoordinates = this.getCorrectedCoordinates(part.row, part.col);
+            return molecule.getPartAt(partCoordinates.row, partCoordinates.col) !== undefined;
+        });
+    }
+
 }
 
 class RenderedMolecule {
     constructor(molecule) {
         this.molecule = molecule;
-    }
-
-    isAt(row, col) {
-        return this.molecule.isAt(row, col);
     }
 
     getHexagons() {
@@ -74,16 +73,16 @@ class RenderedMolecule {
     render(ctx) {
         this.molecule.getHexagons().forEach(hexagon => (new RenderedHexagon(hexagon)).render(ctx));
     }
+
+    overlaps(molecule) {
+        return this.molecule.overlaps(molecule);
+    }
 }
 
 class ColoredMolecule {
     constructor(renderedMolecule, color) {
         this.molecule = renderedMolecule;
         this.color = color;
-    }
-
-    isAt(row, col) {
-        return this.molecule.isAt(row, col);
     }
 
     getHexagons() {
@@ -101,28 +100,38 @@ class ColoredMolecule {
     render(ctx) {
 
     }
+    overlaps(molecule) {
+        return this.molecule.overlaps(molecule);
+    }
 }
 
 class DraggableMolecule {
-    constructor(renderedMolecule, reactiveGrid) {
-        this.molecule = renderedMolecule;
+    constructor(molecule, grid, level) {
+        this.molecule = molecule;
+        this.target = undefined;
         this.selected = undefined;
-        this.grid = reactiveGrid
+        this.level = level;
+        this.grid = grid
             .withMousedownListener(({ row, col }) => this.selected = this.molecule.getPartAt(row, col))
             .withMousemoveListener(({ row, col }) => {
                 if (this.selected) {
-                    this.molecule = this.molecule.moveTo(this.selected, {row, col});
+                    this.target = this.molecule.moveTo(this.selected, { row, col });
                 }
             })
-            .withMouseupListener((_) => this.selected = false);
-    }
-
-    isAt(row, col) {
-        return this.molecule.isAt(row, col);
+            .withMouseupListener((_) => {
+                if (this.selected) {
+                    this.selected = undefined
+                    this.molecule = this.level.tryMove(this, this.target)? this.target : this.molecule;
+                    this.target = undefined;
+                }
+            });
     }
 
     render(ctx) {
         this.molecule.render(ctx);
+        if (this.target) {
+            this.target.render(ctx);
+        }
     }
 
     getHexagons() {
@@ -134,6 +143,10 @@ class DraggableMolecule {
     }
 
     moveTo(source, target) {
-        return new DraggableMolecule(this.molecule.moveTo(source, target));
+        return new DraggableMolecule(this.molecule.moveTo(source, target), this.grid, this.level);
+    }
+
+    overlaps(molecule) {
+        return this.molecule.overlaps(molecule);
     }
 }
