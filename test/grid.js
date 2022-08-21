@@ -29,11 +29,11 @@
         const grid = new Grid(50, 5, 5);
         for (let row = 0; row < 2; row++) {
             for (let col = 0; col < 2; col++) {
-                const hexagon = new RenderedHexagon(grid.getHexagon(new GridPosition(row, col)), "#ddd");
+                const hexagon = new RenderedHexagon(grid.getHexagon(new Position(row, col)), "#ddd");
                 hexagon.render(ctx);
             }
         }
-        const hexagon = new RenderedHexagon(grid.getHexagon(new GridPosition(2, 2)));
+        const hexagon = new RenderedHexagon(grid.getHexagon(new Position(2, 2)));
         hexagon.render(ctx);
 
     })
@@ -41,13 +41,13 @@
 
     runner.test("a 4x5 grid", (canvas) => {
         const ctx = canvas.getContext("2d");
-        const grid = new Grid(30, new GridPosition(4, 5));
+        const grid = new Grid(30, new Position(4, 5));
         grid.render(ctx);
     })
 
     runner.test("a colored grid", (canvas) => {
         const ctx = canvas.getContext("2d");
-        const grid = new Grid(30, new GridPosition(4, 5), "#ddd");
+        const grid = new Grid(30, new Position(4, 5), "#ddd");
         grid.render(ctx);
     })
 
@@ -55,7 +55,7 @@
         const ctx = canvas.getContext("2d");
         let grid =
             new ReactiveGrid(
-                new Grid(30, new GridPosition(4, 10)),
+                new Grid(30, new Position(4, 10)),
                 canvas
             );
         grid = grid

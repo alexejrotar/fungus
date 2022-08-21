@@ -5,46 +5,42 @@ class Grid {
         this.color = color;
     }
 
-    isInside(gridPosition) {
-        return gridPosition.greaterEqual(new GridPosition(0, 0)) && this.corner.greaterEqual(gridPosition.add(new GridPosition(1, 1)));
+    isInside(position) {
+        return position.greaterEqual(new Position(0, 0)) && this.corner.greaterEqual(position.add(new Position(1, 1)));
     }
 
-    getHexagon(gridPosition) {
-        const { x, y } = this.getCartesianCoordinates(gridPosition);
+    getHexagon(position) {
+        const { x, y } = this.getCartesianCoordinates(position);
         return new Hexagon(this.radius, x, y);
     }
 
-    getCartesianCoordinates(gridPosition) {
+    getCartesianCoordinates(position) {
         const { sin, cos, PI } = Math;
         const r = this.radius;
-        const x = r + gridPosition.col * (r + r * cos(PI / 3));
-        const y = gridPosition.row * 2 * r * sin(PI / 3) + r + (gridPosition.col % 2) * r * sin(PI / 3);
+        const x = r + position.col * (r + r * cos(PI / 3));
+        const y = position.row * 2 * r * sin(PI / 3) + r + (position.col % 2) * r * sin(PI / 3);
         return { x, y };
     }
 
-    getGridCoordinates(x, y) {
+    getPosition(x, y) {
         let minDistance;
-        let gridPosition = new GridPosition(0, 0);
+        let position = new Position(0, 0);
 
-        for (let row = 0; row < this.corner.row; row++) {
-            for (let col = 0; col < this.corner.col; col++) {
-                let point = this.getCartesianCoordinates(new GridPosition(row, col));
-                let distance = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
+        for (const pos of this.corner.positionsBelow()) {
+            let point = this.getCartesianCoordinates(pos);
+            let distance = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
 
-                if (!minDistance || distance < minDistance) {
-                    minDistance = distance;
-                    gridPosition = new GridPosition(row, col);
-                }
+            if (!minDistance || distance < minDistance) {
+                minDistance = distance;
+                position = pos;
             }
         }
-        return gridPosition;
+        return position;
     }
 
     render(ctx) {
-        for (let row = 0; row < this.corner.row; row++) {
-            for (let col = 0; col < this.corner.col; col++) {
-                new RenderedHexagon(this.getHexagon(new GridPosition(row, col)), this.color).render(ctx);
-            }
+        for (const position of this.corner.positionsBelow()) {
+            new RenderedHexagon(this.getHexagon(position), this.color).render(ctx);
         }
     }
 
@@ -57,21 +53,21 @@ class ReactiveGrid {
     constructor(grid, canvas) {
         this.grid = grid;
         this.canvas = canvas;
-        this.mouseCoordinates = new GridPosition(-1, -1);
+        this.mouseCoordinates = new Position(-1, -1);
         this.mousedownListeners = [];
         this.mouseupListeners = [];
         this.mousemoveListeners = [];
         canvas.addEventListener("mousedown", (event) => {
-            const coordinates = this.grid.getGridCoordinates(event.offsetX, event.offsetY);
+            const coordinates = this.grid.getPosition(event.offsetX, event.offsetY);
             this.mousedownListeners.forEach(cb => cb(coordinates))
         });
         canvas.addEventListener("mouseup", (event) => {
-            const coordinates = this.grid.getGridCoordinates(event.offsetX, event.offsetY);
+            const coordinates = this.grid.getPosition(event.offsetX, event.offsetY);
             this.mouseupListeners.forEach(cb => cb(coordinates))
         }
         )
         canvas.addEventListener("mousemove", (event) => {
-            const coordinates = this.grid.getGridCoordinates(event.offsetX, event.offsetY);
+            const coordinates = this.grid.getPosition(event.offsetX, event.offsetY);
             if (this.mouseCoordinates.row !== coordinates.row || this.mouseCoordinates.col !== coordinates.col) {
                 this.mouseCoordinates = coordinates;
                 this.mousemoveListeners.forEach(cb => cb(coordinates))
@@ -92,28 +88,28 @@ class ReactiveGrid {
         return this;
     }
 
-    getHexagon(gridPosition) {
-        return this.grid.getHexagon(gridPosition);
+    getHexagon(position) {
+        return this.grid.getHexagon(position);
     }
 
-    getCartesianCoordinates(gridPosition) {
-        return this.grid.getCartesianCoordinates(gridPosition);
+    getCartesianCoordinates(position) {
+        return this.grid.getCartesianCoordinates(position);
     }
 
-    getGridCoordinates(x, y) {
-        return this.grid.getGridCoordinates(x, y);
+    getPosition(x, y) {
+        return this.grid.getPosition(x, y);
     }
 
     render(ctx) {
         this.grid.render(ctx);
     }
 
-    isInside(gridPosition) {
-        return this.grid.isInside(gridPosition);
+    isInside(position) {
+        return this.grid.isInside(position);
     }
 }
 
-class GridPosition {
+class Position {
     constructor(row, col) {
         this.row = row;
         this.col = col;
@@ -128,10 +124,22 @@ class GridPosition {
     }
 
     add(other) {
-        return new GridPosition(this.row + other.row, this.col + other.col);
+        return new Position(this.row + other.row, this.col + other.col);
     }
 
     subtract(other) {
-        return new GridPosition(this.row - other.row, this.col - other.col);
+        return new Position(this.row - other.row, this.col - other.col);
+    }
+
+    *positionsBelow() {
+        for (let row = 0; row < this.row; row++) {
+            for (let col = 0; col < this.col; col++) {
+                yield new Position(row, col);
+            }
+        }
+    }
+
+    copy() {
+        return new Position(this.row, this.col);
     }
 }

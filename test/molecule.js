@@ -12,7 +12,7 @@
     runner.test("a moved molecule", (canvas) => {
         const ctx = canvas.getContext("2d");
         const grid = defaultGrid();
-        const molecule = new Molecule(defaultShape(), grid).moveTo(new Transform(new GridPosition(0, 0), new GridPosition(0, 1)));
+        const molecule = new Molecule(defaultShape(), grid).moveTo(new Transform(new Position(0, 0), new Position(0, 1)));
         grid.render(ctx);
         molecule.render(ctx);
     })
@@ -20,15 +20,15 @@
     runner.run();
 
     function defaultGrid() {
-        return new Grid(30, new GridPosition(4, 10), "#ddd");
+        return new Grid(30, new Position(4, 10), "#ddd");
     }
 
     function defaultShape() {
         return [
-            { row: 0, col: 0 },
-            { row: 1, col: 0, sides: [0, 5] },
-            { row: 2, col: 0 },
-            { row: 0, col: 1, sides: [4, 5] }
+            new Part(new Position(0, 0)),
+            new Part(new Position(1, 0), [0, 5]),
+            new Part(new Position(2, 0)),
+            new Part(new Position(0, 1), [4, 5])
         ];
     }
 }

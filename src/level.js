@@ -13,4 +13,17 @@ class Level {
         this.grid.render(ctx);
         this.molecules.forEach(molecule => molecule.render(ctx));
     }
+
+    withMousedownListener(callback) {
+        this.grid = this.grid.withMousedownListener(callback);
+        return this;
+    }
+    withMouseupListener(callback) {
+        this.grid = this.grid.withMouseupListener(callback);
+        return this;
+    }
+    withMousemoveListener(callback) {
+        this.grid = this.grid.withMousemoveListener(callback);
+        return this;
+    }
 }

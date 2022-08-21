@@ -1,32 +1,20 @@
-// TODO make object for shape
-// TODO make object for part of shape
 class Molecule {
     constructor(shape, grid) {
         this.shape = shape;
         this.grid = grid;
-        this.transform = new Transform(new GridPosition(0, 0), new GridPosition(0, 0));
+        this.transform = new Transform(new Position(0, 0), new Position(0, 0));
     }
 
-    getPartAt(gridPosition) {
+    getPartAt(position) {
         const part = this.shape.find(part => {
-            const partCoordinates = this.getCorrectedCoordinates(new GridPosition(part.row, part.col));
-            return partCoordinates.equals(gridPosition);
+            const partPosition = part.getTransformedPosition(this.transform);
+            return partPosition.equals(position);
         })
         if (part) {
-            return new GridPosition(part.row, part.col);
+            return part.getPosition();
         } else {
             return undefined;
         }
-    }
-
-    getCorrectedCoordinates(gridPosition) {
-        const offset = this.transform.getOffset();
-        let correctedPosition = gridPosition.add(offset);
-        if (offset.col % 2 === 1) {
-            const rowCorrection = gridPosition.col % 2 - this.transform.source.col % 2;
-            correctedPosition = correctedPosition.add(new GridPosition(rowCorrection, 0));
-        }
-        return correctedPosition;
     }
 
     moveTo(transform) {
@@ -34,8 +22,8 @@ class Molecule {
         movedMolecule.transform = transform;
 
         if (!movedMolecule.shape.every(part => {
-            const partCoordinates = movedMolecule.getCorrectedCoordinates(new GridPosition(part.row, part.col));
-            return this.grid.isInside(partCoordinates);
+            const position = part.getTransformedPosition(movedMolecule.transform);
+            return this.grid.isInside(position);
         })) {
             movedMolecule.transform = this.transform;
         }
@@ -44,15 +32,15 @@ class Molecule {
 
     overlaps(molecule) {
         return this.shape.some(part => {
-            const partCoordinates = this.getCorrectedCoordinates(new GridPosition(part.row, part.col));
-            return molecule.getPartAt(partCoordinates) !== undefined;
+            const position = part.getTransformedPosition(this.transform);
+            return molecule.getPartAt(position) !== undefined;
         });
     }
 
     render(ctx) {
         this.shape.forEach(part => {
-            const gridPosition = this.getCorrectedCoordinates(new GridPosition(part.row, part.col));
-            let hexagon = this.grid.getHexagon(gridPosition);
+            const position = part.getTransformedPosition(this.transform);
+            let hexagon = this.grid.getHexagon(position);
             if (part.sides) {
                 hexagon = new PartialHexagon(hexagon, part.sides);
             }
@@ -62,19 +50,18 @@ class Molecule {
 }
 
 class DraggableMolecule {
-    constructor(molecule, grid, level) {
+    constructor(molecule, level) {
         this.molecule = molecule;
         this.target = undefined;
         this.selected = undefined;
-        this.level = level;
-        this.grid = grid
-            .withMousedownListener((gridPosition) => {
-                this.selected = this.molecule.getPartAt(gridPosition)
+        this.level = level
+            .withMousedownListener((position) => {
+                this.selected = this.molecule.getPartAt(position);
             })
-            .withMousemoveListener((gridPosition) => {
+            .withMousemoveListener((position) => {
                 if (this.selected) {
                     // TODO replace with this.target.moveTo
-                    this.target = this.molecule.moveTo(new Transform(this.selected, gridPosition));
+                    this.target = this.molecule.moveTo(new Transform(this.selected, position));
                 }
             })
             .withMouseupListener((_) => {
@@ -104,7 +91,28 @@ class Transform {
         this.target = target;
     }
 
-    getOffset() {
+    offset() {
         return this.target.subtract(this.source);
+    }
+}
+
+class Part {
+    constructor(position, sides) {
+        this.position = position;
+        this.sides = sides;
+    }
+
+    getTransformedPosition(transform) {
+        const offset = transform.offset();
+        let correctedPosition = this.position.add(offset);
+        if (offset.col % 2 === 1) {
+            const rowCorrection = this.position.col % 2 - transform.source.col % 2;
+            correctedPosition = correctedPosition.add(new Position(rowCorrection, 0));
+        }
+        return correctedPosition;
+    }
+
+    getPosition() {
+        return this.position.copy();
     }
 }
