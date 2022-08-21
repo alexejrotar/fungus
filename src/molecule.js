@@ -18,7 +18,7 @@ class Molecule {
     }
 
     moveTo(transform) {
-        const movedMolecule = new Molecule(this.shape, this.grid);
+        const movedMolecule = this.copy();
         movedMolecule.transform = transform;
 
         if (!movedMolecule.shape.every(part => {
@@ -47,12 +47,18 @@ class Molecule {
             (new RenderedHexagon(hexagon)).render(ctx);
         })
     }
+
+    copy() {
+        const molecule = new Molecule(this.shape.map(part => part.copy()), this.grid);
+        molecule.transform = this.transform.copy();
+        return molecule;
+    }
 }
 
 class DraggableMolecule {
     constructor(molecule, level) {
         this.molecule = molecule;
-        this.target = undefined;
+        this.target = this.molecule.copy();
         this.selected = undefined;
         this.level = level
             .withMousedownListener((position) => {
@@ -60,15 +66,14 @@ class DraggableMolecule {
             })
             .withMousemoveListener((position) => {
                 if (this.selected) {
-                    // TODO replace with this.target.moveTo
-                    this.target = this.molecule.moveTo(new Transform(this.selected, position));
+                    this.target = this.target.moveTo(new Transform(this.selected, position));
                 }
             })
             .withMouseupListener((_) => {
-                if (this.selected && this.target) {
+                if (this.selected) {
                     this.selected = undefined
                     this.molecule = this.level.tryMove(this, this.target) ? this.target : this.molecule;
-                    this.target = undefined;
+                    this.target = this.molecule.copy();
                 }
             });
     }
@@ -94,6 +99,10 @@ class Transform {
     offset() {
         return this.target.subtract(this.source);
     }
+
+    copy() {
+        return new Transform(this.source.copy(), this.target.copy());
+    }
 }
 
 class Part {
@@ -114,5 +123,9 @@ class Part {
 
     getPosition() {
         return this.position.copy();
+    }
+
+    copy() {
+        return new Part(this.position.copy(), this.sides? [...this.sides] : undefined);
     }
 }

@@ -43,7 +43,6 @@ class Grid {
             new RenderedHexagon(this.getHexagon(position), this.color).render(ctx);
         }
     }
-
 }
 
 // TODO handle clicking outside of grid
