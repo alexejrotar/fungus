@@ -10,12 +10,7 @@
 
     runner.test("a colored hexagon", (canvas) => {
         const ctx = canvas.getContext("2d");
-        const hexagon =
-            new ColoredHexagon(
-                new RenderedHexagon(
-                    new Hexagon(50, 50, 50)
-                ),
-                "#ddd");
+        const hexagon = new RenderedHexagon(new Hexagon(50, 50, 50), "#ddd");
         hexagon.render(ctx);
     })
 
@@ -34,15 +29,11 @@
         const grid = new Grid(50, 5, 5);
         for (let row = 0; row < 2; row++) {
             for (let col = 0; col < 2; col++) {
-                const hexagon =
-                    new ColoredHexagon(
-                        new RenderedHexagon(grid.getHexagon(row, col)),
-                        "#ddd"
-                    );
+                const hexagon = new RenderedHexagon(grid.getHexagon(new GridPosition(row, col)), "#ddd");
                 hexagon.render(ctx);
             }
         }
-        const hexagon = new RenderedHexagon(grid.getHexagon(2, 2));
+        const hexagon = new RenderedHexagon(grid.getHexagon(new GridPosition(2, 2)));
         hexagon.render(ctx);
 
     })
@@ -50,19 +41,13 @@
 
     runner.test("a 4x5 grid", (canvas) => {
         const ctx = canvas.getContext("2d");
-        const grid = new RenderedGrid(new Grid(30, 4, 5));
+        const grid = new Grid(30, new GridPosition(4, 5));
         grid.render(ctx);
     })
 
     runner.test("a colored grid", (canvas) => {
         const ctx = canvas.getContext("2d");
-        const grid =
-            new ColoredGrid(
-                new RenderedGrid(
-                    new Grid(30, 4, 5)
-                ),
-                "#ddd"
-            );
+        const grid = new Grid(30, new GridPosition(4, 5), "#ddd");
         grid.render(ctx);
     })
 
@@ -70,13 +55,13 @@
         const ctx = canvas.getContext("2d");
         let grid =
             new ReactiveGrid(
-                new RenderedGrid(new Grid(30, 4, 10)),
+                new Grid(30, new GridPosition(4, 10)),
                 canvas
             );
         grid = grid
             .withMousedownListener(({ row, col }) => console.log(`clicked at ${row}, ${col}`))
-            .withMousemoveListener(({row, col}) => console.log(`moved to ${row}, ${col}`))
-            .withMouseupListener(({row, col}) => console.log(`released at ${row}, ${col}`));
+            .withMousemoveListener(({ row, col }) => console.log(`moved to ${row}, ${col}`))
+            .withMouseupListener(({ row, col }) => console.log(`released at ${row}, ${col}`));
         grid.render(ctx);
     })
 

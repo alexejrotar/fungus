@@ -7,8 +7,8 @@
         const molecules = [];
         const level = new Level(grid, molecules);
         
-        level.molecules.push(defaultMolecule(grid, level))
-        level.molecules.push(defaultMolecule(grid, level).moveTo({ row: 0, col: 0 }, { row: 0, col: 3 }));
+        level.molecules.push(new DraggableMolecule(defaultMolecule(grid, level).moveTo(new Transform(new GridPosition(0, 0), new GridPosition(0, 3))), grid, level));
+        level.molecules.push(new DraggableMolecule(defaultMolecule(grid, level).moveTo(new Transform(new GridPosition(0, 0), new GridPosition(0, 1))), grid, level));
         window.setInterval(() => {
             ctx.save();
             ctx.fillStyle = "white";
@@ -19,17 +19,11 @@
     })
 
     function defaultGrid(canvas) {
-        return new ReactiveGrid(new ColoredGrid(
-            new RenderedGrid(new Grid(30, 4, 10)),
-            "#ddd"
-        ), canvas);
+        return new ReactiveGrid(new Grid(30, new GridPosition(4, 10),"#ddd"), canvas);
     }
 
     function defaultMolecule(grid, level) {
-        return new DraggableMolecule(
-            new RenderedMolecule(
-                new Molecule(defaultShape(), grid)
-            ), grid, level);
+        return new Molecule(defaultShape(), grid);
     }
 
     function defaultShape() {

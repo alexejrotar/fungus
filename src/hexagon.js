@@ -8,57 +8,19 @@ class Hexagon {
     getSides() {
         const sides = [];
         for (let i = 0; i < 6; i++) {
-            const source = { x: this.getX(i), y: this.getY(i) };
-            const target = { x: this.getX(i + 1), y: this.getY(i + 1) };
+            const source = this.getCartesian(i);
+            const target = this.getCartesian(i + 1);
             sides.push([source, target]);
         }
         return sides;
     }
 
-    getX(index) {
-        return this.x + this.radius * Math.cos(index * Math.PI / 3);
-    }
 
-    getY(index) {
-        return this.y + this.radius * Math.sin(index * Math.PI / 3);
-    }
-}
+    getCartesian(index) {
+        const x = this.x + this.radius * Math.cos(index * Math.PI / 3);
+        const y = this.y + this.radius * Math.sin(index * Math.PI / 3);
+        return { x, y };
 
-class RenderedHexagon {
-    constructor(hexagon) {
-        this.hexagon = hexagon;
-    }
-
-    getSides() {
-        return this.hexagon.getSides();
-    }
-
-    render(ctx) {
-        const sides = this.getSides();
-        ctx.beginPath();
-        for (const side of sides) {
-            ctx.moveTo(side[0].x, side[0].y);
-            ctx.lineTo(side[1].x, side[1].y);
-        }
-        ctx.stroke();
-    }
-}
-
-class ColoredHexagon {
-    constructor(hexagon, color) {
-        this.hexagon = hexagon;
-        this.color = color;
-    }
-
-    render(ctx) {
-        ctx.save();
-        ctx.strokeStyle = this.color;
-        this.hexagon.render(ctx);
-        ctx.restore();
-    }
-
-    getSides() {
-        return this.hexagon.getSides();
     }
 }
 
@@ -70,5 +32,25 @@ class PartialHexagon {
 
     getSides() {
         return this.hexagon.getSides().filter((_, i) => this.points.includes(i));
+    }
+}
+
+class RenderedHexagon {
+    constructor(hexagon, color = "#000") {
+        this.hexagon = hexagon;
+        this.color = color;
+    }
+
+    render(ctx) {
+        const sides = this.hexagon.getSides();
+        ctx.save();
+        ctx.strokeStyle = this.color;
+        ctx.beginPath();
+        for (const side of sides) {
+            ctx.moveTo(side[0].x, side[0].y);
+            ctx.lineTo(side[1].x, side[1].y);
+        }
+        ctx.stroke();
+        ctx.restore();
     }
 }

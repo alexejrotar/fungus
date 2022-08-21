@@ -1,3 +1,4 @@
+// TODO make this decorate the grid
 class Level {
     constructor(grid, molecules) {
         this.grid = grid;
