@@ -126,6 +126,19 @@ class Part {
     }
 
     copy() {
-        return new Part(this.position.copy(), this.sides? [...this.sides] : undefined);
+        return new Part(this.position.copy(), this.sides ? [...this.sides] : undefined);
+    }
+}
+
+class MoleculeTypeA extends Molecule {
+    constructor(grid) {
+        const shape = [
+                new Part(new Position(0, 0)),
+                new Part(new Position(1, 0), [0, 5]),
+                new Part(new Position(2, 0)),
+                new Part(new Position(0, 1), [4, 5])
+            ]
+
+        super(shape, grid);
     }
 }
