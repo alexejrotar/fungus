@@ -1,16 +1,29 @@
+// TODO register the events for the reactive grid instead of the molecules
 class Level {
-    constructor(grid, molecules) {
+    constructor(grid, molecules = [], receptors = []) {
         this.grid = grid;
         this.molecules = molecules;
+        this.receptors = receptors;
     }
 
     tryMove(source, target) {
-        return !this.molecules.some(molecule => molecule !== source && molecule.overlaps(target));
+        if (this.molecules.some(molecule => molecule !== source && molecule.overlaps([target]))) {
+            return false;
+        }
+        this.receptors = this.receptors
+            .map(receptor => {
+                const result = receptor.resolve(this.molecules);
+                this.molecules = result.molecules;
+                return result.receptor;
+            })
+            .filter(receptor => receptor !== undefined);
+        return true;
     }
 
     render(ctx) {
         this.grid.render(ctx);
         this.molecules.forEach(molecule => molecule.render(ctx));
+        this.receptors.forEach(receptor => receptor.render(ctx));
     }
 
     withMousedownListener(callback) {

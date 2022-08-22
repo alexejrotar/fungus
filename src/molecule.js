@@ -30,10 +30,17 @@ class Molecule {
         return movedMolecule;
     }
 
-    overlaps(molecule) {
+    overlaps(molecules) {
         return this.shape.some(part => {
             const position = part.getTransformedPosition(this.transform);
-            return molecule.getPartAt(position) !== undefined;
+            return molecules.some(molecule => molecule.getPartAt(position) !== undefined)
+        });
+    }
+
+    containedIn(molecules) {
+        return this.shape.every(part => {
+            const position = part.getTransformedPosition(this.transform);
+            return molecules.some(molecule => molecule.getPartAt(position) !== undefined)
         });
     }
 
@@ -71,8 +78,10 @@ class DraggableMolecule {
             })
             .withMouseupListener((_) => {
                 if (this.selected) {
-                    this.selected = undefined
-                    this.molecule = this.level.tryMove(this, this.target) ? this.target : this.molecule;
+                    this.selected = undefined;
+                    const previousMolecule = this.molecule;
+                    this.molecule = this.target;
+                    this.molecule = this.level.tryMove(this, this.molecule) ? this.molecule : previousMolecule;
                     this.target = this.molecule.copy();
                 }
             });
@@ -85,8 +94,16 @@ class DraggableMolecule {
         }
     }
 
-    overlaps(molecule) {
-        return this.molecule.overlaps(molecule);
+    overlaps(molecules) {
+        return this.molecule.overlaps(molecules);
+    }
+
+    containedIn(molecules) {
+        return this.molecule.containedIn(molecules);
+    }
+
+    getPartAt(position) {
+        return this.molecule.getPartAt(position);
     }
 }
 
