@@ -9,21 +9,21 @@
         level.molecules.push(new DraggableMolecule((new MoleculeTypeA(grid)).moveTo(new Transform(new Position(0, 0), new Position(0, 1))), level));
 
         level.receptors.push(new Receptor([
-            new MoleculeTypeA(grid).moveTo(new Transform(new Position(0, 0), new Position(2, 5))),
-            new MoleculeTypeA(grid).moveTo(new Transform(new Position(0, 0), new Position(4, 6)))
+            new MoleculeTypeA(grid, "#a5a").moveTo(new Transform(new Position(0, 0), new Position(2, 5))),
+            new MoleculeTypeA(grid, "#a5a").moveTo(new Transform(new Position(0, 0), new Position(4, 6)))
         ]));
 
         window.setInterval(() => {
             ctx.save();
             ctx.fillStyle = "white";
-            ctx.fillRect(0, 0, 500, 300);
+            ctx.fillRect(0, 0, 800, 500);
             ctx.restore();
             level.render(ctx);
         }, 100)
     })
 
     function defaultGrid(canvas) {
-        return new ReactiveGrid(new Grid(30, new Position(8, 15),"#ddd"), canvas);
+        return new ReactiveGrid(new Grid(30, new Position(8, 15),"#888"), canvas);
     }
 
     runner.run();

@@ -1,8 +1,9 @@
 class Molecule {
-    constructor(shape, grid) {
+    constructor(shape, grid, color = "#000") {
         this.shape = shape;
         this.grid = grid;
         this.transform = new Transform(new Position(0, 0), new Position(0, 0));
+        this.color = color;
     }
 
     getPartAt(position) {
@@ -45,18 +46,21 @@ class Molecule {
     }
 
     render(ctx) {
+        ctx.save();
+        ctx.lineWidth = 3;
         this.shape.forEach(part => {
             const position = part.getTransformedPosition(this.transform);
             let hexagon = this.grid.getHexagon(position);
             if (part.sides) {
                 hexagon = new PartialHexagon(hexagon, part.sides);
             }
-            (new RenderedHexagon(hexagon)).render(ctx);
+            (new RenderedHexagon(hexagon, this.color, true)).render(ctx);
         })
+        ctx.restore();
     }
 
     copy() {
-        const molecule = new Molecule(this.shape.map(part => part.copy()), this.grid);
+        const molecule = new Molecule(this.shape.map(part => part.copy()), this.grid, this.color);
         molecule.transform = this.transform.copy();
         return molecule;
     }
@@ -89,7 +93,7 @@ class DraggableMolecule {
 
     render(ctx) {
         this.molecule.render(ctx);
-        if (this.target) {
+        if (this.selected) {
             this.target.render(ctx);
         }
     }
@@ -148,7 +152,7 @@ class Part {
 }
 
 class MoleculeTypeA extends Molecule {
-    constructor(grid) {
+    constructor(grid, color = "#0aa") {
         const shape = [
                 new Part(new Position(0, 0)),
                 new Part(new Position(1, 0), [0, 5]),
@@ -156,6 +160,6 @@ class MoleculeTypeA extends Molecule {
                 new Part(new Position(0, 1), [4, 5])
             ]
 
-        super(shape, grid);
+        super(shape, grid, color);
     }
 }

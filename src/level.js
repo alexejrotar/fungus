@@ -4,6 +4,7 @@ class Level {
         this.grid = grid;
         this.molecules = molecules;
         this.receptors = receptors;
+        this.color = "#432";
     }
 
     tryMove(source, target) {
@@ -21,6 +22,11 @@ class Level {
     }
 
     render(ctx) {
+        ctx.save();
+        ctx.fillStyle = this.color;
+        ctx.fillRect(0,0, ctx.canvas.width, ctx.canvas.height);
+        ctx.restore();
+
         this.grid.render(ctx);
         this.molecules.forEach(molecule => molecule.render(ctx));
         this.receptors.forEach(receptor => receptor.render(ctx));
