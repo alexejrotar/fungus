@@ -37,6 +37,7 @@ class PartialHexagon {
     getSides() {
         const sides = this.hexagon.getSides();
 
+        // TODO not quite happy with this..
         return {
             all: sides.all,
             visible: sides.visible

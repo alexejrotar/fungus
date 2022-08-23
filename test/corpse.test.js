@@ -21,7 +21,7 @@
     })
 
     function defaultGrid(canvas) {
-        return new ReactiveGrid(new Grid(30, new Position(8, 15),"#888"), canvas);
+        return new ReactiveGrid(new Grid(30, new Position(8, 15),"#555"), canvas);
     }
 
     runner.run();

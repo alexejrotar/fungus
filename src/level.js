@@ -1,4 +1,3 @@
-// TODO register the events for the reactive grid instead of the molecules
 class Level {
     constructor(grid, molecules = [], receptors = [], corpses = []) {
         this.molecules = molecules;
@@ -6,13 +5,16 @@ class Level {
         this.corpses = corpses;
         this.color = "#432";
         this.grid = grid
-            .withMousedownListener(position => this.handleMousedown(position));
+            .withMousedownListener(position => this.handleMousedown(position))
+            .withMousemoveListener(position => this.handleMousemove(position))
+            .withMouseupListener(position => this.handleMouseup(position));
     }
 
     tryMove(source, target) {
         if (this.molecules.some(molecule => molecule !== source && molecule.overlaps([target]))) {
             return false;
         }
+        // TODO not quite happy with this implementation..
         this.receptors = this.receptors
             .map(receptor => {
                 const result = receptor.resolve(this.molecules);
@@ -35,25 +37,20 @@ class Level {
         this.corpses.forEach(corpse => corpse.render(ctx));
     }
 
-    withMousedownListener(callback) {
-        this.grid = this.grid.withMousedownListener(callback);
-        return this;
-    }
-    withMouseupListener(callback) {
-        this.grid = this.grid.withMouseupListener(callback);
-        return this;
-    }
-    withMousemoveListener(callback) {
-        this.grid = this.grid.withMousemoveListener(callback);
-        return this;
+    takeMolecule(molecule) {
+        this.molecules.push(new DraggableMolecule(molecule));
     }
 
     handleMousedown(position) {
-        this.corpses.forEach(corpse => {
-            const molecule = corpse.decompose(position);
-            if (molecule) {
-                this.molecules.push(new DraggableMolecule(molecule, this));
-            }
-        })
+        this.corpses.forEach(corpse => corpse.mousedown(position, this.takeMolecule.bind(this)));
+        this.molecules.forEach(molecule => molecule.mousedown(position));
+    }
+
+    handleMousemove(position) {
+        this.molecules.forEach(molecule => molecule.mousemoved(position));
+    }
+
+    handleMouseup(_) {
+        this.molecules.forEach(molecule => molecule.mouseup(this.tryMove.bind(this)));
     }
 }

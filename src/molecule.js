@@ -67,35 +67,40 @@ class Molecule {
 }
 
 class DraggableMolecule {
-    constructor(molecule, level) {
+    constructor(molecule) {
         this.molecule = molecule;
         this.target = this.molecule.copy();
         this.selected = undefined;
-        this.level = level
-            .withMousedownListener((position) => {
-                this.selected = this.molecule.getPartAt(position);
-            })
-            .withMousemoveListener((position) => {
-                if (this.selected) {
-                    this.target = this.target.moveTo(new Transform(this.selected, position));
-                }
-            })
-            .withMouseupListener((_) => {
-                if (this.selected) {
-                    this.selected = undefined;
-                    const previousMolecule = this.molecule;
-                    this.molecule = this.target;
-                    this.molecule = this.level.tryMove(this, this.molecule) ? this.molecule : previousMolecule;
-                    this.target = this.molecule.copy();
-                }
-            });
+    }
+
+    mousedown(position) {
+        this.selected = this.molecule.getPartAt(position);
+    }
+
+    mousemoved(position) {
+        if (this.selected) {
+            this.target = this.target.moveTo(new Transform(this.selected, position));
+        }
+    }
+
+    mouseup(tryMove) {
+        if (this.selected) {
+            this.selected = undefined;
+            const previousMolecule = this.molecule;
+            this.molecule = this.target;
+            this.molecule = tryMove(this, this.molecule) ? this.molecule : previousMolecule;
+            this.target = this.molecule.copy();
+        }
     }
 
     render(ctx) {
-        this.molecule.render(ctx);
+        const color = this.molecule.color;
         if (this.selected) {
             this.target.render(ctx);
+            this.molecule.color = "#aaa";
         }
+        this.molecule.render(ctx);
+        this.molecule.color = color;
     }
 
     overlaps(molecules) {
@@ -154,11 +159,11 @@ class Part {
 class MoleculeTypeA extends Molecule {
     constructor(grid, color = "#0aa") {
         const shape = [
-                new Part(new Position(0, 0)),
-                new Part(new Position(1, 0), [0, 5]),
-                new Part(new Position(2, 0)),
-                new Part(new Position(0, 1), [4, 5])
-            ]
+            new Part(new Position(0, 0)),
+            new Part(new Position(1, 0), [0, 5]),
+            new Part(new Position(2, 0)),
+            new Part(new Position(0, 1), [4, 5])
+        ]
 
         super(shape, grid, color);
     }

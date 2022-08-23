@@ -7,10 +7,11 @@ class Corpse {
         this.molecules.forEach(molecule => molecule.render(ctx));
     }
 
-    decompose(position) {
+    mousedown(position, take) {
         const decomposedMolecule = this.molecules.find(molecule => molecule.getPartAt(position) !== undefined);
-        console.log(decomposedMolecule);
-        this.molecules = this.molecules.filter(molecule => molecule !== decomposedMolecule);
-        return decomposedMolecule;
+        if (decomposedMolecule) {
+            this.molecules = this.molecules.filter(molecule => molecule !== decomposedMolecule);
+            take(decomposedMolecule);
+        }
     }
 }
