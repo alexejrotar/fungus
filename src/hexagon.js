@@ -19,7 +19,11 @@ class Hexagon {
     getCartesian(index) {
         const x = this.x + this.radius * Math.cos(index * Math.PI / 3);
         const y = this.y + this.radius * Math.sin(index * Math.PI / 3);
-        return { x, y };
+        const offset = {
+            x: Math.random() * 4 - 2,
+            y: Math.random() * 4 - 2,
+        };
+        return { x: x + offset.x, y: y + offset.y };
 
     }
 }
@@ -70,7 +74,7 @@ class RenderedHexagon {
             }
             ctx.fill();
         }
-        
+
         ctx.restore();
     }
 }
