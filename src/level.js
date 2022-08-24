@@ -1,8 +1,6 @@
 class Level {
-    constructor(grid, molecules = [], receptors = [], corpses = []) {
+    constructor(grid, molecules = []) {
         this.molecules = molecules;
-        this.receptors = receptors;
-        this.corpses = corpses;
         this.color = "#432";
         this.grid = grid
             .withMousedownListener(position => this.handleMousedown(position))
@@ -11,18 +9,7 @@ class Level {
     }
 
     tryMove(source, target) {
-        if (this.molecules.some(molecule => molecule !== source && molecule.overlaps([target]))) {
-            return false;
-        }
-        // TODO not quite happy with this implementation..
-        this.receptors = this.receptors
-            .map(receptor => {
-                const result = receptor.resolve(this.molecules);
-                this.molecules = result.molecules;
-                return result.receptor;
-            })
-            .filter(receptor => receptor !== undefined);
-        return true;
+        return !this.molecules.some(molecule => molecule !== source && molecule.overlaps(target))
     }
 
     render(ctx) {
@@ -33,21 +20,14 @@ class Level {
 
         this.grid.render(ctx);
         this.molecules.forEach(molecule => molecule.render(ctx));
-        this.receptors.forEach(receptor => receptor.render(ctx));
-        this.corpses.forEach(corpse => corpse.render(ctx));
-    }
-
-    takeMolecule(molecule) {
-        this.molecules.push(new DraggableMolecule(molecule));
     }
 
     handleMousedown(position) {
-        this.corpses.forEach(corpse => corpse.mousedown(position, this.takeMolecule.bind(this)));
         this.molecules.forEach(molecule => molecule.mousedown(position));
     }
 
     handleMousemove(position) {
-        this.molecules.forEach(molecule => molecule.mousemoved(position));
+        this.molecules.forEach(molecule => molecule.mousemoved(position, this.tryMove.bind(this)));
     }
 
     handleMouseup(_) {

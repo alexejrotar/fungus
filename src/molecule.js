@@ -31,17 +31,10 @@ class Molecule {
         return movedMolecule;
     }
 
-    overlaps(molecules) {
+    overlaps(molecule) {
         return this.shape.some(part => {
             const position = part.getTransformedPosition(this.transform);
-            return molecules.some(molecule => molecule.getPartAt(position) !== undefined)
-        });
-    }
-
-    containedIn(molecules) {
-        return this.shape.every(part => {
-            const position = part.getTransformedPosition(this.transform);
-            return molecules.some(molecule => molecule.getPartAt(position) !== undefined)
+            return molecule.getPartAt(position) !== undefined;
         });
     }
 
@@ -69,7 +62,6 @@ class Molecule {
 class DraggableMolecule {
     constructor(molecule) {
         this.molecule = molecule;
-        this.target = this.molecule.copy();
         this.selected = undefined;
     }
 
@@ -77,38 +69,25 @@ class DraggableMolecule {
         this.selected = this.molecule.getPartAt(position);
     }
 
-    mousemoved(position) {
-        if (this.selected) {
-            this.target = this.target.moveTo(new Transform(this.selected, position));
-        }
+    mousemoved(position, tryMove) {
+        if (!this.selected) return;
+        const previous = this.molecule;
+        this.molecule = this.molecule.moveTo(new Transform(this.selected, position));
+        this.molecule = tryMove(this, this.molecule) ? this.molecule : previous;
     }
 
-    mouseup(tryMove) {
+    mouseup() {
         if (this.selected) {
             this.selected = undefined;
-            const previousMolecule = this.molecule;
-            this.molecule = this.target;
-            this.molecule = tryMove(this, this.molecule) ? this.molecule : previousMolecule;
-            this.target = this.molecule.copy();
         }
     }
 
     render(ctx) {
-        const color = this.molecule.color;
-        if (this.selected) {
-            this.target.render(ctx);
-            this.molecule.color = "#aaa";
-        }
         this.molecule.render(ctx);
-        this.molecule.color = color;
     }
 
-    overlaps(molecules) {
-        return this.molecule.overlaps(molecules);
-    }
-
-    containedIn(molecules) {
-        return this.molecule.containedIn(molecules);
+    overlaps(molecule) {
+        return this.molecule.overlaps(molecule);
     }
 
     getPartAt(position) {
