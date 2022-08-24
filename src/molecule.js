@@ -63,17 +63,29 @@ class DraggableMolecule {
     constructor(molecule) {
         this.molecule = molecule;
         this.selected = undefined;
+        this.currentPosition = undefined;
     }
 
     mousedown(position) {
         this.selected = this.molecule.getPartAt(position);
+        this.currentPosition = position;
     }
 
+    // TODO there is certainly a more elegant way...
     mousemoved(position, tryMove) {
         if (!this.selected) return;
+
+        const offset = (new Transform(this.currentPosition, position)).offset();
+        if (Math.abs(offset.row) > 1 || Math.abs(offset.col) > 1) return;
+        
         const previous = this.molecule;
         this.molecule = this.molecule.moveTo(new Transform(this.selected, position));
-        this.molecule = tryMove(this, this.molecule) ? this.molecule : previous;
+
+        if (tryMove(this, this.molecule)) {
+            this.currentPosition = position;
+        } else {
+            this.molecule = previous;
+        }
     }
 
     mouseup() {
