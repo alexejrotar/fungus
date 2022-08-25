@@ -8,7 +8,7 @@ class Molecule {
 
     getPartAt(position) {
         const part = this.shape.find(part => {
-            const partPosition = part.getTransformedPosition(this.transform);
+            const partPosition = part.getTransformedPosition(this.transform, this.grid);
             return partPosition.equals(position);
         })
         if (part) {
@@ -23,7 +23,7 @@ class Molecule {
         movedMolecule.transform = transform;
 
         if (!movedMolecule.shape.every(part => {
-            const position = part.getTransformedPosition(movedMolecule.transform);
+            const position = part.getTransformedPosition(movedMolecule.transform, this.grid);
             return this.grid.isInside(position);
         })) {
             movedMolecule.transform = this.transform;
@@ -33,7 +33,7 @@ class Molecule {
 
     overlaps(molecule) {
         return this.shape.some(part => {
-            const position = part.getTransformedPosition(this.transform);
+            const position = part.getTransformedPosition(this.transform, this.grid);
             return molecule.getPartAt(position) !== undefined;
         });
     }
@@ -42,7 +42,7 @@ class Molecule {
         ctx.save();
         ctx.lineWidth = 3;
         this.shape.forEach(part => {
-            const position = part.getTransformedPosition(this.transform);
+            const position = part.getTransformedPosition(this.transform, this.grid);
             let hexagon = this.grid.getHexagon(position);
             if (part.sides) {
                 hexagon = new PartialHexagon(hexagon, part.sides);
@@ -117,6 +117,15 @@ class Transform {
         return this.target.subtract(this.source);
     }
 
+    cartesianOffset(grid) {
+        const cartesianSource = grid.getCartesian(this.source);
+        const cartesianTarget = grid.getCartesian(this.target);
+        return {
+            x: cartesianTarget.x - cartesianSource.x,
+            y: cartesianTarget.y - cartesianSource.y,
+        };
+    }
+
     copy() {
         return new Transform(this.source.copy(), this.target.copy());
     }
@@ -128,14 +137,21 @@ class Part {
         this.sides = sides;
     }
 
-    getTransformedPosition(transform) {
-        const offset = transform.offset();
-        let correctedPosition = this.position.add(offset);
-        if (offset.col % 2 === 1) {
-            const rowCorrection = this.position.col % 2 - transform.source.col % 2;
-            correctedPosition = correctedPosition.add(new Position(rowCorrection, 0));
-        }
-        return correctedPosition;
+    // TODO fix the boundaries
+    getTransformedPosition(transform, grid) {
+        const offset = transform.cartesianOffset(grid);
+        let cartesian = grid.getCartesian(this.position);
+        cartesian = {
+            x: cartesian.x + offset.x,
+            y: cartesian.y + offset.y,
+        };
+        return grid.getPosition(cartesian.x, cartesian.y);
+        // let correctedPosition = this.position.add(offset);
+        // if (offset.col % 2 === 1) {
+        //     const rowCorrection = this.position.col % 2 - transform.source.col % 2;
+        //     correctedPosition = correctedPosition.add(new Position(rowCorrection, 0));
+        // }
+        // return correctedPosition;
     }
 
     getPosition() {

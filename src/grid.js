@@ -10,11 +10,11 @@ class Grid {
     }
 
     getHexagon(position) {
-        const { x, y } = this.getCartesianCoordinates(position);
+        const { x, y } = this.getCartesian(position);
         return new Hexagon(this.radius, x, y);
     }
 
-    getCartesianCoordinates(position) {
+    getCartesian(position) {
         const { sin, cos, PI } = Math;
         const r = this.radius;
         const x = r + position.col * (r + r * cos(PI / 3));
@@ -22,15 +22,16 @@ class Grid {
         return { x, y };
     }
 
+    // TODO make an object for cartesian
     getPosition(x, y) {
         let minDistance;
         let position = new Position(0, 0);
 
         for (const pos of this.corner.positionsBelow()) {
-            let point = this.getCartesianCoordinates(pos);
+            let point = this.getCartesian(pos);
             let distance = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
 
-            if (!minDistance || distance < minDistance) {
+            if (minDistance === undefined || distance < minDistance) {
                 minDistance = distance;
                 position = pos;
             }
@@ -91,8 +92,8 @@ class ReactiveGrid {
         return this.grid.getHexagon(position);
     }
 
-    getCartesianCoordinates(position) {
-        return this.grid.getCartesianCoordinates(position);
+    getCartesian(position) {
+        return this.grid.getCartesian(position);
     }
 
     getPosition(x, y) {
