@@ -20,6 +20,6 @@
     runner.run();
 
     function defaultGrid() {
-        return new Grid(30, 200, 200, 5, "#ddd");
+        return new Grid(30, new Cartesian(200, 200), 5, "#ddd");
     }
 }

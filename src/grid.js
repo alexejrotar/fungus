@@ -1,9 +1,7 @@
-// TODO make sure, positions are always valid
 class Grid {
-    constructor(radius, centerX, centerY, size, color = "#000") {
+    constructor(radius, center, size, color = "#000") {
         this.radius = radius;
-        this.centerX = centerX;
-        this.centerY = centerY;
+        this.center = center;
         this.size = size;
         this.color = color;
     }
@@ -30,7 +28,7 @@ class Grid {
 
     getHexagon(position) {
         const cartesian = this.getCartesian(position);
-        return new Hexagon(this.radius, cartesian.x, cartesian.y);
+        return new Hexagon(this.radius, cartesian);
     }
 
     // TODO
@@ -39,40 +37,27 @@ class Grid {
         const r = this.radius;
         const v = position.coordinates;
 
-        const cartesian = {
-            x: this.centerX,
-            y: this.centerY - v[2] * 2 * r * sin(PI / 3),
-        };
-        cartesian.x += (v[0] - v[1]) * (r + r * cos(PI / 3));
-        cartesian.y += (v[0] + v[1]) * r * sin(PI / 3);
+        const cartesian = this.center
+            .add(new Cartesian(0, -v[2] * 2 * r * sin(PI / 3) ))
+            .add(new Cartesian((v[0] - v[1]) * (r + r * cos(PI / 3)), (v[0] + v[1]) * r * sin(PI / 3)));
 
         return cartesian;
     }
 
     // TODO
-    getPosition(x, y) {
+    getPosition(cartesian) {
         const r = this.radius;
         const { sin, cos, PI } = Math;
-        x -= this.centerX;
-        y -= this.centerY;
+        cartesian = cartesian.subtract(this.center);
 
         const vectorCoordinates = (u, v) => ({
-            a: (x * v.y - y * v.x) / (u.x * v.y - u.y * v.x),
-            b: (y * u.x - x * u.y) / (u.x * v.y - u.y * v.x)
+            a: (cartesian.x * v.y - cartesian.y * v.x) / (u.x * v.y - u.y * v.x),
+            b: (cartesian.y * u.x - cartesian.x * u.y) / (u.x * v.y - u.y * v.x)
         });
 
-        const u = {
-            x: r + r * cos(PI / 3),
-            y: r * sin(PI / 3),
-        };
-        const v = {
-            x: - u.x,
-            y: u.y,
-        };
-        const w = {
-            x: 0,
-            y: - 2 * r * sin(PI / 3),
-        };
+        const u = new Cartesian(r + r * cos(PI / 3), r * sin(PI / 3));
+        const v = new Cartesian(- (r + r * cos(PI / 3)), r * sin(PI / 3));
+        const w = new Cartesian(0, - 2 * r * sin(PI / 3));
 
         let c = vectorCoordinates(u, v);
         if (c.a >= 0 && c.b >= 0) return new Position(...([c.a, c.b, 0].map(n => Math.round(n))));
@@ -97,37 +82,39 @@ class ReactiveGrid {
         this.grid = grid;
         this.canvas = canvas;
         this.mouseCoordinates = new Position(-1, -1, -1);
-        this.mousedownListeners = [];
-        this.mouseupListeners = [];
-        this.mousemoveListeners = [];
+        this.listeners = {
+            mousedown: [],
+            mousemove: [],
+            mouseup: [],
+        };
         canvas.addEventListener("mousedown", (event) => {
-            const coordinates = this.grid.getPosition(event.offsetX, event.offsetY);
-            this.mousedownListeners.forEach(cb => cb(coordinates))
+            const coordinates = this.grid.getPosition(new Cartesian(event.offsetX, event.offsetY));
+            this.listeners.mousedown.forEach(cb => cb(coordinates))
         });
         canvas.addEventListener("mouseup", (event) => {
-            const coordinates = this.grid.getPosition(event.offsetX, event.offsetY);
-            this.mouseupListeners.forEach(cb => cb(coordinates))
+            const coordinates = this.grid.getPosition(new Cartesian(event.offsetX, event.offsetY));
+            this.listeners.mouseup.forEach(cb => cb(coordinates))
         }
         )
         canvas.addEventListener("mousemove", (event) => {
-            const coordinates = this.grid.getPosition(event.offsetX, event.offsetY);
+            const coordinates = this.grid.getPosition(new Cartesian(event.offsetX, event.offsetY));
             if (!coordinates.equals(this.mouseCoordinates)) {
                 this.mouseCoordinates = coordinates;
-                this.mousemoveListeners.forEach(cb => cb(coordinates))
+                this.listeners.mousemove.forEach(cb => cb(coordinates))
             }
         })
     }
 
     withMousedownListener(callback) {
-        this.mousedownListeners.push(callback);
+        this.listeners.mousedown.push(callback);
         return this;
     }
     withMouseupListener(callback) {
-        this.mouseupListeners.push(callback);
+        this.listeners.mouseup.push(callback);
         return this;
     }
     withMousemoveListener(callback) {
-        this.mousemoveListeners.push(callback);
+        this.listeners.mousemove.push(callback);
         return this;
     }
 
@@ -139,8 +126,8 @@ class ReactiveGrid {
         return this.grid.getCartesian(position);
     }
 
-    getPosition(x, y) {
-        return this.grid.getPosition(x, y);
+    getPosition(cartesian) {
+        return this.grid.getPosition(cartesian);
     }
 
     render(ctx) {
@@ -204,5 +191,20 @@ class Position {
 
     copy() {
         return new Position(...this.coordinates);
+    }
+}
+
+class Cartesian {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    add(other) {
+        return new Cartesian(this.x + other.x, this.y + other.y);
+    }
+
+    subtract(other) {
+        return new Cartesian(this.x - other.x, this.y - other.y);
     }
 }

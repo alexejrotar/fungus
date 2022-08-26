@@ -19,7 +19,7 @@
     })
 
     function defaultGrid(canvas) {
-        return new ReactiveGrid(new Grid(30, 300, 300, 6, "#555"), canvas);
+        return new ReactiveGrid(new Grid(30, new Cartesian(300, 300), 6, "#555"), canvas);
     }
 
     runner.run();

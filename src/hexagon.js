@@ -1,7 +1,6 @@
 class Hexagon {
-    constructor(radius, x, y) {
-        this.x = x;
-        this.y = y;
+    constructor(radius, cartesian) {
+        this.cartesian = cartesian;
         this.radius = radius;
     }
 
@@ -17,13 +16,15 @@ class Hexagon {
 
 
     getCartesian(index) {
-        const x = this.x + this.radius * Math.cos(index * Math.PI / 3);
-        const y = this.y + this.radius * Math.sin(index * Math.PI / 3);
-        const offset = {
-            x: Math.random() * 4 - 2,
-            y: Math.random() * 4 - 2,
-        };
-        return { x: x + offset.x, y: y + offset.y };
+        const cartesian = this.cartesian
+            .add(new Cartesian(
+                this.radius * Math.cos(index * Math.PI / 3),
+                this.radius * Math.sin(index * Math.PI / 3)
+            ))
+            .add(new Cartesian(
+                Math.random() * 4 - 2,
+                Math.random() * 4 - 2));
+        return cartesian;
 
     }
 }

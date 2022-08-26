@@ -59,6 +59,7 @@ class Molecule {
     }
 }
 
+// TODO get rid of undefined
 class DraggableMolecule {
     constructor(molecule) {
         this.molecule = molecule;
@@ -71,7 +72,6 @@ class DraggableMolecule {
         this.currentPosition = position;
     }
 
-    // TODO there is certainly a more elegant way...
     mousemoved(position, tryMove) {
         if (!this.selected) return;
 
@@ -121,10 +121,7 @@ class Transform {
     cartesianOffset(grid) {
         const cartesianSource = grid.getCartesian(this.source);
         const cartesianTarget = grid.getCartesian(this.target);
-        return {
-            x: cartesianTarget.x - cartesianSource.x,
-            y: cartesianTarget.y - cartesianSource.y,
-        };
+        return cartesianTarget.subtract(cartesianSource);
     }
 
     copy() {
@@ -140,13 +137,10 @@ class Part {
 
     getTransformedPosition(transform, grid) {
         const offset = transform.cartesianOffset(grid);
-        let cartesian = grid.getCartesian(this.position);
-        cartesian = {
-            x: cartesian.x + offset.x,
-            y: cartesian.y + offset.y,
-        };
+        let cartesian = grid.getCartesian(this.position)
+            .add(offset);
 
-        return grid.getPosition(cartesian.x, cartesian.y);
+        return grid.getPosition(cartesian);
     }
 
     getPosition() {
