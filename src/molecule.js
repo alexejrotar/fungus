@@ -2,7 +2,7 @@ class Molecule {
     constructor(shape, grid, color = "#000") {
         this.shape = shape;
         this.grid = grid;
-        this.transform = new Transform(new Position(0, 0), new Position(0, 0));
+        this.transform = new Transform(new Position(0, 0, 0), new Position(0, 0, 0));
         this.color = color;
     }
 
@@ -75,8 +75,9 @@ class DraggableMolecule {
     mousemoved(position, tryMove) {
         if (!this.selected) return;
 
-        const offset = (new Transform(this.currentPosition, position)).offset();
-        if (Math.abs(offset.row) > 1 || Math.abs(offset.col) > 1) return;
+        // TODO
+        // const offset = (new Transform(this.currentPosition, position)).offset();
+        // if (Math.abs(offset.row) > 1 || Math.abs(offset.col) > 1) return;
         
         const previous = this.molecule;
         this.molecule = this.molecule.moveTo(new Transform(this.selected, position));
@@ -137,7 +138,6 @@ class Part {
         this.sides = sides;
     }
 
-    // TODO fix the boundaries
     getTransformedPosition(transform, grid) {
         const offset = transform.cartesianOffset(grid);
         let cartesian = grid.getCartesian(this.position);
@@ -145,13 +145,8 @@ class Part {
             x: cartesian.x + offset.x,
             y: cartesian.y + offset.y,
         };
+
         return grid.getPosition(cartesian.x, cartesian.y);
-        // let correctedPosition = this.position.add(offset);
-        // if (offset.col % 2 === 1) {
-        //     const rowCorrection = this.position.col % 2 - transform.source.col % 2;
-        //     correctedPosition = correctedPosition.add(new Position(rowCorrection, 0));
-        // }
-        // return correctedPosition;
     }
 
     getPosition() {
@@ -166,10 +161,10 @@ class Part {
 class MoleculeTypeA extends Molecule {
     constructor(grid, color = "#0aa") {
         const shape = [
-            new Part(new Position(0, 0)),
-            new Part(new Position(1, 0), [0, 5]),
-            new Part(new Position(2, 0)),
-            new Part(new Position(0, 1), [4, 5])
+            new Part(new Position(0, 0, 0)),
+            new Part(new Position(1, 0, 0), [0, 5]),
+            new Part(new Position(2, 0, 0)),
+            new Part(new Position(0, 1, 0), [4, 5])
         ]
 
         super(shape, grid, color);

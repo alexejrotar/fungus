@@ -1,6 +1,6 @@
 {
 
-    const runner = new VisualTestRunner(500, 300);
+    const runner = new VisualTestRunner(500, 500);
 
     runner.test("a hexagon", (canvas) => {
         const ctx = canvas.getContext("2d");
@@ -24,44 +24,51 @@
 
     })
 
-    runner.test("a hexagon at 2, 2", (canvas) => {
+    runner.test("a simple grid", (canvas) => {
         const ctx = canvas.getContext("2d");
-        const grid = new Grid(50, 5, 5);
-        for (let row = 0; row < 2; row++) {
-            for (let col = 0; col < 2; col++) {
-                const hexagon = new RenderedHexagon(grid.getHexagon(new Position(row, col)), "#ddd");
-                hexagon.render(ctx);
-            }
-        }
-        const hexagon = new RenderedHexagon(grid.getHexagon(new Position(2, 2)));
-        hexagon.render(ctx);
-
-    })
-
-
-    runner.test("a 4x5 grid", (canvas) => {
-        const ctx = canvas.getContext("2d");
-        const grid = new Grid(30, new Position(4, 5));
+        const grid = new Grid(30, 200, 200, 5);
         grid.render(ctx);
     })
 
-    runner.test("a colored grid", (canvas) => {
-        const ctx = canvas.getContext("2d");
-        const grid = new Grid(30, new Position(4, 5), "#ddd");
-        grid.render(ctx);
-    })
+
+    // runner.test("a hexagon at 2, 2", (canvas) => {
+    //     const ctx = canvas.getContext("2d");
+    //     const grid = new Grid(50, 5, 5);
+    //     for (let row = 0; row < 2; row++) {
+    //         for (let col = 0; col < 2; col++) {
+    //             const hexagon = new RenderedHexagon(grid.getHexagon(new Position(row, col)), "#ddd");
+    //             hexagon.render(ctx);
+    //         }
+    //     }
+    //     const hexagon = new RenderedHexagon(grid.getHexagon(new Position(2, 2)));
+    //     hexagon.render(ctx);
+
+    // })
+
+
+    // runner.test("a 4x5 grid", (canvas) => {
+    //     const ctx = canvas.getContext("2d");
+    //     const grid = new Grid(30, new Position(4, 5));
+    //     grid.render(ctx);
+    // })
+
+    // runner.test("a colored grid", (canvas) => {
+    //     const ctx = canvas.getContext("2d");
+    //     const grid = new Grid(30, new Position(4, 5), "#ddd");
+    //     grid.render(ctx);
+    // })
 
     runner.test("a reactive grid", (canvas) => {
         const ctx = canvas.getContext("2d");
         let grid =
             new ReactiveGrid(
-                new Grid(30, new Position(4, 10)),
+                new Grid(30, 200, 200, 5),
                 canvas
             );
         grid = grid
-            .withMousedownListener(({ row, col }) => console.log(`clicked at ${row}, ${col}`))
-            .withMousemoveListener(({ row, col }) => console.log(`moved to ${row}, ${col}`))
-            .withMouseupListener(({ row, col }) => console.log(`released at ${row}, ${col}`));
+            .withMousedownListener((position) => console.log(`clicked at ${position.coordinates}`))
+            .withMousemoveListener((position) => console.log(`moved to ${position.coordinates}`))
+            .withMouseupListener((position) => console.log(`released at ${position.coordinates}`));
         grid.render(ctx);
     })
 

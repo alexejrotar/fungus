@@ -1,48 +1,91 @@
+// TODO make sure, positions are always valid
 class Grid {
-    constructor(radius, corner, color = "#000") {
+    constructor(radius, centerX, centerY, size, color = "#000") {
         this.radius = radius;
-        this.corner = corner;
+        this.centerX = centerX;
+        this.centerY = centerY;
+        this.size = size;
         this.color = color;
     }
 
-    isInside(position) {
-        return position.greaterEqual(new Position(0, 0)) && this.corner.greaterEqual(position.add(new Position(1, 1)));
+    // TODO
+    render(ctx) {
+        (new RenderedHexagon(this.getHexagon(new Position(0, 0, 0)), this.color)).render(ctx);
+        for (let u = 0; u < this.size; u++) {
+            for (let v = 1; v < this.size; v++) {
+                (new RenderedHexagon(this.getHexagon(new Position(u, v, 0)), this.color)).render(ctx);
+            }
+        }
+        for (let w = 0; w < this.size; w++) {
+            for (let u = 1; u < this.size; u++) {
+                (new RenderedHexagon(this.getHexagon(new Position(u, 0, w)), this.color)).render(ctx);
+            }
+        }
+        for (let v = 0; v < this.size; v++) {
+            for (let w = 1; w < this.size; w++) {
+                (new RenderedHexagon(this.getHexagon(new Position(0, v, w)), this.color)).render(ctx);
+            }
+        }
     }
 
     getHexagon(position) {
-        const { x, y } = this.getCartesian(position);
-        return new Hexagon(this.radius, x, y);
+        const cartesian = this.getCartesian(position);
+        return new Hexagon(this.radius, cartesian.x, cartesian.y);
     }
 
+    // TODO
     getCartesian(position) {
         const { sin, cos, PI } = Math;
         const r = this.radius;
-        const x = r + position.col * (r + r * cos(PI / 3));
-        const y = position.row * 2 * r * sin(PI / 3) + r + (position.col % 2) * r * sin(PI / 3);
-        return { x, y };
+        const v = position.coordinates;
+
+        const cartesian = {
+            x: this.centerX,
+            y: this.centerY - v[2] * 2 * r * sin(PI / 3),
+        };
+        cartesian.x += (v[0] - v[1]) * (r + r * cos(PI / 3));
+        cartesian.y += (v[0] + v[1]) * r * sin(PI / 3);
+
+        return cartesian;
     }
 
-    // TODO make an object for cartesian
+    // TODO
     getPosition(x, y) {
-        let minDistance;
-        let position = new Position(0, 0);
+        const r = this.radius;
+        const { sin, cos, PI } = Math;
+        x -= this.centerX;
+        y -= this.centerY;
 
-        for (const pos of this.corner.positionsBelow()) {
-            let point = this.getCartesian(pos);
-            let distance = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
+        const vectorCoordinates = (u, v) => ({
+            a: (x * v.y - y * v.x) / (u.x * v.y - u.y * v.x),
+            b: (y * u.x - x * u.y) / (u.x * v.y - u.y * v.x)
+        });
 
-            if (minDistance === undefined || distance < minDistance) {
-                minDistance = distance;
-                position = pos;
-            }
-        }
-        return position;
+        const u = {
+            x: r + r * cos(PI / 3),
+            y: r * sin(PI / 3),
+        };
+        const v = {
+            x: - u.x,
+            y: u.y,
+        };
+        const w = {
+            x: 0,
+            y: - 2 * r * sin(PI / 3),
+        };
+
+        let c = vectorCoordinates(u, v);
+        if (c.a >= 0 && c.b >= 0) return new Position(...([c.a, c.b, 0].map(n => Math.round(n))));
+
+        c = vectorCoordinates(u, w);
+        if (c.a >= 0 && c.b >= 0) return new Position(...([c.a, 0, c.b].map(n => Math.round(n))));
+
+        c = vectorCoordinates(v, w);
+        if (c.a >= 0 && c.b >= 0) return new Position(...([0, c.a, c.b].map(n => Math.round(n))));
     }
 
-    render(ctx) {
-        for (const position of this.corner.positionsBelow()) {
-            new RenderedHexagon(this.getHexagon(position), this.color).render(ctx);
-        }
+    isInside(position) {
+        return position.every(coordinate => coordinate < this.size);
     }
 }
 
@@ -53,7 +96,7 @@ class ReactiveGrid {
     constructor(grid, canvas) {
         this.grid = grid;
         this.canvas = canvas;
-        this.mouseCoordinates = new Position(-1, -1);
+        this.mouseCoordinates = new Position(-1, -1, -1);
         this.mousedownListeners = [];
         this.mouseupListeners = [];
         this.mousemoveListeners = [];
@@ -68,7 +111,7 @@ class ReactiveGrid {
         )
         canvas.addEventListener("mousemove", (event) => {
             const coordinates = this.grid.getPosition(event.offsetX, event.offsetY);
-            if (this.mouseCoordinates.row !== coordinates.row || this.mouseCoordinates.col !== coordinates.col) {
+            if (!coordinates.equals(this.mouseCoordinates)) {
                 this.mouseCoordinates = coordinates;
                 this.mousemoveListeners.forEach(cb => cb(coordinates))
             }
@@ -110,36 +153,56 @@ class ReactiveGrid {
 }
 
 class Position {
-    constructor(row, col) {
-        this.row = row;
-        this.col = col;
-    }
+    constructor(u, v, w) {
+        const { PI, sin, cos } = Math;
+        const axes = {
+            u: { x: 1 + cos(PI / 3), y: sin(PI / 3) },
+            v: { x: - (1 + cos(PI / 3)), y: sin(PI / 3) },
+            w: { x: 0, y: - 2 * sin(PI / 3) },
+        };
 
-    equals(other) {
-        return this.row === other.row && this.col === other.col;
-    }
+        const x = u * axes.u.x + v * axes.v.x + w * axes.w.x;
+        const y = u * axes.u.y + v * axes.v.y + w * axes.w.y;
 
-    greaterEqual(other) {
-        return this.row >= other.row && this.col >= other.col;
-    }
+        const vectorCoordinates = (u, v) => [
+            (x * v.y - y * v.x) / (u.x * v.y - u.y * v.x),
+            (y * u.x - x * u.y) / (u.x * v.y - u.y * v.x)
+        ];
 
-    add(other) {
-        return new Position(this.row + other.row, this.col + other.col);
-    }
+        let c = vectorCoordinates(axes.u, axes.v);
+        if (c[0] >= 0 && c[1] >= 0) {
+            this.coordinates = [c[0], c[1], 0].map(n => Math.round(n));
+        }
 
-    subtract(other) {
-        return new Position(this.row - other.row, this.col - other.col);
-    }
-
-    *positionsBelow() {
-        for (let row = 0; row < this.row; row++) {
-            for (let col = 0; col < this.col; col++) {
-                yield new Position(row, col);
-            }
+        c = vectorCoordinates(axes.u, axes.w);
+        if (c[0] >= 0 && c[1] >= 0) {
+            this.coordinates = [c[0], 0, c[1]].map(n => Math.round(n));
+        }
+        c = vectorCoordinates(axes.v, axes.w);
+        if (c[0] >= 0 && c[1] >= 0) {
+            this.coordinates = [0, c[0], c[1]].map(n => Math.round(n));
         }
     }
 
+    equals(other) {
+        return this.coordinates.every((v, i) => v === other.coordinates[i]);
+    }
+
+    every(predicate) {
+        return this.coordinates.every(predicate);
+    }
+
+    add(other) {
+        const coordinates = this.coordinates.map((v, i) => v + other.coordinates[i]);
+        return new Position(...coordinates);
+    }
+
+    subtract(other) {
+        const coordinates = this.coordinates.map((v, i) => v - other.coordinates[i]);
+        return new Position(...coordinates);
+    }
+
     copy() {
-        return new Position(this.row, this.col);
+        return new Position(...this.coordinates);
     }
 }
