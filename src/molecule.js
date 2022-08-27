@@ -1,14 +1,16 @@
+// TODO store all information in shape rather than transform and rotation
 class Molecule {
     constructor(shape, grid, color = "#000") {
         this.shape = shape;
         this.grid = grid;
         this.transform = new Transform(new Position(0, 0, 0), new Position(0, 0, 0));
+        this.rotation = new Rotation(new Position(0, 0, 0), 0);
         this.color = color;
     }
 
     getPartAt(position) {
         const part = this.shape.find(part => {
-            const partPosition = part.getTransformedPosition(this.transform, this.grid);
+            const partPosition = part.getTransformedPosition(this.transform, this.rotation, this.grid);
             return partPosition.equals(position);
         })
         if (part) {
@@ -18,12 +20,12 @@ class Molecule {
         }
     }
 
-    moveTo(transform, dissolve) {
+    moveTo(transform, dissolve = () => { }) {
         const movedMolecule = this.copy();
         movedMolecule.transform = transform;
 
         if (movedMolecule.shape.every(part => {
-            const position = part.getTransformedPosition(movedMolecule.transform, this.grid);
+            const position = part.getTransformedPosition(movedMolecule.transform, movedMolecule.rotation, this.grid);
             return !this.grid.isInside(position);
         })) {
             dissolve();
@@ -31,9 +33,21 @@ class Molecule {
         return movedMolecule;
     }
 
+    rotate(rotation, dissolve = () => { }) {
+        const rotatedMolecule = this.copy();
+        rotatedMolecule.rotation = rotation;
+        if (rotatedMolecule.shape.every(part => {
+            const position = part.getTransformedPosition(rotatedMolecule.transform, rotatedMolecule.rotation, this.grid);
+            return !this.grid.isInside(position);
+        })) {
+            dissolve();
+        }
+        return rotatedMolecule;
+    }
+
     overlaps(molecule) {
         return this.shape.some(part => {
-            const position = part.getTransformedPosition(this.transform, this.grid);
+            const position = part.getTransformedPosition(this.transform, this.rotation, this.grid);
             return molecule.getPartAt(position) !== undefined;
         });
     }
@@ -42,7 +56,7 @@ class Molecule {
         ctx.save();
         ctx.lineWidth = 3;
         this.shape.forEach(part => {
-            const position = part.getTransformedPosition(this.transform, this.grid);
+            const position = part.getTransformedPosition(this.transform, this.rotation, this.grid);
             let hexagon = this.grid.getHexagon(position);
             if (part.sides) {
                 hexagon = new PartialHexagon(hexagon, part.sides);
@@ -75,10 +89,10 @@ class DraggableMolecule {
     mousemoved(position, tryMove, dissolve) {
         if (!this.selected) return;
 
-        // TODO
+        // TODO prevent jumping
         // const offset = (new Transform(this.currentPosition, position)).offset();
         // if (Math.abs(offset.row) > 1 || Math.abs(offset.col) > 1) return;
-        
+
         const previous = this.molecule;
         this.molecule = this.molecule.moveTo(new Transform(this.selected, position), () => dissolve(this));
 
@@ -90,8 +104,23 @@ class DraggableMolecule {
     }
 
     mouseup() {
-        if (this.selected) {
-            this.selected = undefined;
+        this.selected = undefined;
+    }
+
+    left(tryMove, dissolve) {
+        if (!this.selected) return;
+        const previous = this.molecule;
+        this.molecule = this.molecule.rotate(new Rotation(this.selected, 1), () => dissolve(this));
+        if (!tryMove(this, this.molecule)) {
+            this.molecule = previous;
+        }
+    }
+    right(tryMove, dissolve) {
+        if (!this.selected) return;
+        const previous = this.molecule;
+        this.molecule = this.molecule.rotate(new Rotation(this.selected, -1), () => dissolve(this));
+        if (!tryMove(this, this.molecule)) {
+            this.molecule = previous;
         }
     }
 
@@ -129,16 +158,40 @@ class Transform {
     }
 }
 
+class Rotation {
+    constructor(pivot, rotation) {
+        this.pivot = pivot;
+        this.rotation = rotation;
+    }
+
+    cartesianOffset(grid, position) {
+        const { sin, cos, PI } = Math;
+
+        const pivotCartesian = grid.getCartesian(this.pivot);
+        const cartesian = grid.getCartesian(position).subtract(pivotCartesian);
+        const angle = this.rotation * PI / 3;
+        const rotated = new Cartesian(
+            cartesian.x * cos(angle) - cartesian.y * sin(angle),
+            cartesian.x * sin(angle) + cartesian.y * cos(angle),
+        );
+
+        return rotated.subtract(cartesian);
+    }
+}
+
 class Part {
     constructor(position, sides) {
         this.position = position;
         this.sides = sides;
     }
 
-    getTransformedPosition(transform, grid) {
-        const offset = transform.cartesianOffset(grid);
+    getTransformedPosition(transform, rotation, grid) {
+        const transposeOffset = transform.cartesianOffset(grid);
+        const rotationOffset = rotation.cartesianOffset(grid, this.position);
         let cartesian = grid.getCartesian(this.position)
-            .add(offset);
+            .add(transposeOffset)
+            .add(rotationOffset);
+
 
         return grid.getPosition(cartesian);
     }

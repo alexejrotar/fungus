@@ -74,7 +74,6 @@ class Grid {
     }
 }
 
-// TODO handle clicking outside of grid
 // TODO create extend function to automatically provide default implementations
 // TODO enable removing of listeners
 class ReactiveGrid {
@@ -86,6 +85,8 @@ class ReactiveGrid {
             mousedown: [],
             mousemove: [],
             mouseup: [],
+            left: [],
+            right: [],
         };
         canvas.addEventListener("mousedown", (event) => {
             const coordinates = this.grid.getPosition(new Cartesian(event.offsetX, event.offsetY));
@@ -103,6 +104,18 @@ class ReactiveGrid {
                 this.listeners.mousemove.forEach(cb => cb(coordinates))
             }
         })
+        window.addEventListener("keydown", (event) => {
+            switch (event.code) {
+                case "KeyQ": {
+                    this.listeners.left.forEach(cb => cb());
+                    break;
+                }
+                case "KeyE": {
+                    this.listeners.right.forEach(cb => cb());
+                    break;
+                }
+            }
+        })
     }
 
     withMousedownListener(callback) {
@@ -115,6 +128,16 @@ class ReactiveGrid {
     }
     withMousemoveListener(callback) {
         this.listeners.mousemove.push(callback);
+        return this;
+    }
+
+    withLeftListener(callback) {
+        this.listeners.left.push(callback);
+        return this;
+    }
+
+    withRightListener(callback) {
+        this.listeners.right.push(callback);
         return this;
     }
 
@@ -206,5 +229,9 @@ class Cartesian {
 
     subtract(other) {
         return new Cartesian(this.x - other.x, this.y - other.y);
+    }
+
+    distance(other) {
+        return Math.sqrt((other.x - this.x)**2 + (other.y - this.y)**2);
     }
 }

@@ -5,7 +5,9 @@ class Level {
         this.grid = grid
             .withMousedownListener(position => this.handleMousedown(position))
             .withMousemoveListener(position => this.handleMousemove(position))
-            .withMouseupListener(position => this.handleMouseup(position));
+            .withMouseupListener(position => this.handleMouseup(position))
+            .withLeftListener(this.handleLeft.bind(this))
+            .withRightListener(this.handleRight.bind(this));
     }
 
     tryMove(source, target) {
@@ -36,5 +38,13 @@ class Level {
 
     handleMouseup(_) {
         this.molecules.forEach(molecule => molecule.mouseup());
+    }
+
+    handleLeft() {
+        this.molecules.forEach(molecule => molecule.left(this.tryMove.bind(this), this.dissovle.bind(this)));
+    }
+
+    handleRight() {
+        this.molecules.forEach(molecule => molecule.right(this.tryMove.bind(this), this.dissovle.bind(this)));
     }
 }

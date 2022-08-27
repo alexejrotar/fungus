@@ -40,7 +40,9 @@
         grid = grid
             .withMousedownListener((position) => console.log(`clicked at ${position.coordinates}`))
             .withMousemoveListener((position) => console.log(`moved to ${position.coordinates}`))
-            .withMouseupListener((position) => console.log(`released at ${position.coordinates}`));
+            .withMouseupListener((position) => console.log(`released at ${position.coordinates}`))
+            .withLeftListener(() => console.log("left"))
+            .withRightListener(() => console.log("right"));
         grid.render(ctx);
     })
 

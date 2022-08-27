@@ -17,6 +17,17 @@
         molecule.render(ctx);
     })
 
+
+    for (let rotation = 1; rotation < 6; rotation++) {
+        runner.test(`a ${rotation} rotated molecule`, (canvas) => {
+            const ctx = canvas.getContext("2d");
+            const grid = defaultGrid();
+            const molecule = (new MoleculeTypeA(grid)).rotate(new Rotation(new Position(0, 0, 0), rotation));
+            grid.render(ctx);
+            molecule.render(ctx);
+        })
+    }
+
     runner.run();
 
     function defaultGrid() {
