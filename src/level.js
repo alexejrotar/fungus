@@ -12,6 +12,10 @@ class Level {
         return !this.molecules.some(molecule => molecule !== source && molecule.overlaps(target))
     }
 
+    dissovle(molecule) {
+        this.molecules = this.molecules.filter(other => other !== molecule);
+    }
+
     render(ctx) {
         ctx.save();
         ctx.fillStyle = this.color;
@@ -27,10 +31,10 @@ class Level {
     }
 
     handleMousemove(position) {
-        this.molecules.forEach(molecule => molecule.mousemoved(position, this.tryMove.bind(this)));
+        this.molecules.forEach(molecule => molecule.mousemoved(position, this.tryMove.bind(this), this.dissovle.bind(this)));
     }
 
     handleMouseup(_) {
-        this.molecules.forEach(molecule => molecule.mouseup(this.tryMove.bind(this)));
+        this.molecules.forEach(molecule => molecule.mouseup());
     }
 }

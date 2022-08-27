@@ -18,15 +18,15 @@ class Molecule {
         }
     }
 
-    moveTo(transform) {
+    moveTo(transform, dissolve) {
         const movedMolecule = this.copy();
         movedMolecule.transform = transform;
 
-        if (!movedMolecule.shape.every(part => {
+        if (movedMolecule.shape.every(part => {
             const position = part.getTransformedPosition(movedMolecule.transform, this.grid);
-            return this.grid.isInside(position);
+            return !this.grid.isInside(position);
         })) {
-            movedMolecule.transform = this.transform;
+            dissolve();
         }
         return movedMolecule;
     }
@@ -72,7 +72,7 @@ class DraggableMolecule {
         this.currentPosition = position;
     }
 
-    mousemoved(position, tryMove) {
+    mousemoved(position, tryMove, dissolve) {
         if (!this.selected) return;
 
         // TODO
@@ -80,7 +80,7 @@ class DraggableMolecule {
         // if (Math.abs(offset.row) > 1 || Math.abs(offset.col) > 1) return;
         
         const previous = this.molecule;
-        this.molecule = this.molecule.moveTo(new Transform(this.selected, position));
+        this.molecule = this.molecule.moveTo(new Transform(this.selected, position), () => dissolve(this));
 
         if (tryMove(this, this.molecule)) {
             this.currentPosition = position;
