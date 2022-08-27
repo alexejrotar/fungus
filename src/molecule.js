@@ -3,14 +3,12 @@ class Molecule {
     constructor(shape, grid, color = "#000") {
         this.shape = shape;
         this.grid = grid;
-        this.transform = new Transform(new Position(0, 0, 0), new Position(0, 0, 0));
-        this.rotation = new Rotation(new Position(0, 0, 0), 0);
         this.color = color;
     }
 
     getPartAt(position) {
         const part = this.shape.find(part => {
-            const partPosition = part.getTransformedPosition(this.transform, this.rotation, this.grid);
+            const partPosition = part.getPosition();
             return partPosition.equals(position);
         })
         if (part) {
@@ -22,10 +20,14 @@ class Molecule {
 
     moveTo(transform, dissolve = () => { }) {
         const movedMolecule = this.copy();
-        movedMolecule.transform = transform;
+        movedMolecule.shape = movedMolecule.shape.map(part => {
+            const newPart = part.copy();
+            newPart.position = part.getTransposedPosition(transform, this.grid)
+            return newPart;
+        })
 
         if (movedMolecule.shape.every(part => {
-            const position = part.getTransformedPosition(movedMolecule.transform, movedMolecule.rotation, this.grid);
+            const position = part.getPosition();
             return !this.grid.isInside(position);
         })) {
             dissolve();
@@ -35,9 +37,13 @@ class Molecule {
 
     rotate(rotation, dissolve = () => { }) {
         const rotatedMolecule = this.copy();
-        rotatedMolecule.rotation = rotation;
+        rotatedMolecule.shape = rotatedMolecule.shape.map(part => {
+            const newPart = part.copy();
+            newPart.position = part.getRotatedPosition(rotation, this.grid)
+            return newPart;
+        });
         if (rotatedMolecule.shape.every(part => {
-            const position = part.getTransformedPosition(rotatedMolecule.transform, rotatedMolecule.rotation, this.grid);
+            const position = part.getPosition();
             return !this.grid.isInside(position);
         })) {
             dissolve();
@@ -47,7 +53,7 @@ class Molecule {
 
     overlaps(molecule) {
         return this.shape.some(part => {
-            const position = part.getTransformedPosition(this.transform, this.rotation, this.grid);
+            const position = part.getPosition();
             return molecule.getPartAt(position) !== undefined;
         });
     }
@@ -56,7 +62,7 @@ class Molecule {
         ctx.save();
         ctx.lineWidth = 3;
         this.shape.forEach(part => {
-            const position = part.getTransformedPosition(this.transform, this.rotation, this.grid);
+            const position = part.getPosition();
             let hexagon = this.grid.getHexagon(position);
             if (part.sides) {
                 hexagon = new PartialHexagon(hexagon, part.sides);
@@ -68,7 +74,6 @@ class Molecule {
 
     copy() {
         const molecule = new Molecule(this.shape.map(part => part.copy()), this.grid, this.color);
-        molecule.transform = this.transform.copy();
         return molecule;
     }
 }
@@ -98,6 +103,7 @@ class DraggableMolecule {
 
         if (tryMove(this, this.molecule)) {
             this.currentPosition = position;
+            this.selected = position;
         } else {
             this.molecule = previous;
         }
@@ -183,6 +189,21 @@ class Part {
     constructor(position, sides) {
         this.position = position;
         this.sides = sides;
+    }
+
+    getTransposedPosition(transpose, grid) {
+        const transposeOffset = transpose.cartesianOffset(grid);
+        let cartesian = grid.getCartesian(this.position)
+            .add(transposeOffset);
+        return grid.getPosition(cartesian);
+    }
+
+    getRotatedPosition(rotation, grid) {
+        const rotationOffset = rotation.cartesianOffset(grid, this.position);
+        let cartesian = grid.getCartesian(this.position)
+            .add(rotationOffset);
+
+        return grid.getPosition(cartesian);
     }
 
     getTransformedPosition(transform, rotation, grid) {

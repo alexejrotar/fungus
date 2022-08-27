@@ -7,7 +7,7 @@
         const molecules = [];
         const level = new Level(grid, molecules);
         
-        // level.molecules.push(new DraggableMolecule((new MoleculeTypeA(grid)).moveTo(new Transform(new Position(0, 0, 0), new Position(2, 0, 2)))));
+        level.molecules.push(new DraggableMolecule((new MoleculeTypeA(grid)).moveTo(new Transform(new Position(0, 0, 0), new Position(2, 0, 2)))));
         level.molecules.push(new DraggableMolecule(new MoleculeTypeA(grid)));
         window.setInterval(() => {
             ctx.save();
