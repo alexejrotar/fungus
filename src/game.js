@@ -7,7 +7,7 @@ class Game {
 
     start() {
         this.nextLevel();
-        window.setInterval(() => this.render(), 100)
+        window.setInterval(() => this.render(), 10)
     }
 
     nextLevel() {

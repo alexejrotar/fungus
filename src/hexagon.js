@@ -22,8 +22,8 @@ class Hexagon {
                 this.radius * Math.sin(index * Math.PI / 3)
             ))
             .add(new Cartesian(
-                Math.random() * 4 - 2,
-                Math.random() * 4 - 2));
+                Math.random() * 2 - 1,
+                Math.random() * 2 - 1));
         return cartesian;
 
     }
