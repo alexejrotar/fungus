@@ -94,9 +94,7 @@ class DraggableMolecule {
     mousemoved(position, tryMove, dissolve) {
         if (!this.selected) return;
 
-        // TODO prevent jumping
-        // const offset = (new Transform(this.currentPosition, position)).offset();
-        // if (Math.abs(offset.row) > 1 || Math.abs(offset.col) > 1) return;
+        if (!position.isNeighbor(this.currentPosition)) return;
 
         const previous = this.molecule;
         this.molecule = this.molecule.moveTo(new Transform(this.selected, position), () => dissolve(this));
