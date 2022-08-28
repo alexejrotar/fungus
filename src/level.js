@@ -1,7 +1,8 @@
 class Level {
-    constructor(grid, molecules = []) {
+    constructor(grid, molecules = [], completed = () => {}) {
         this.molecules = molecules;
-        this.color = "#432";
+        this.color = "#222";
+        this.completed = completed;
         this.grid = grid
             .withMousedownListener(position => this.handleMousedown(position))
             .withMousemoveListener(position => this.handleMousemove(position))
@@ -16,6 +17,7 @@ class Level {
 
     dissovle(molecule) {
         this.molecules = this.molecules.filter(other => other !== molecule);
+        if (this.molecules.length === 0) this.completed();
     }
 
     render(ctx) {

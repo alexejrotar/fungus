@@ -1,4 +1,3 @@
-// TODO store all information in shape rather than transform and rotation
 class Molecule {
     constructor(shape, grid, color = "#000") {
         this.shape = shape;
@@ -111,6 +110,7 @@ class DraggableMolecule {
         this.selected = undefined;
     }
 
+    // TODO
     left(tryMove, dissolve) {
         if (!this.selected) return;
         const previous = this.molecule;
