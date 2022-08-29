@@ -13,7 +13,7 @@ class Editor {
     }
 
     handleMousedown(position) {
-        let molecule = this.molecules.find(molecule => molecule.getPartAt(position) !== undefined);
+        let molecule = this.molecules.find(molecule => molecule.isAt(position));
 
         if (molecule !== undefined) {
             this.molecules = this.molecules.filter(other => other !== molecule);
@@ -28,7 +28,7 @@ class Editor {
 
     handleMousemove(position) {
         if (this.selected === undefined) return;
-        if (this.molecules.find(molecule => molecule.getPartAt(position) !== undefined) !== undefined) return;
+        if (this.molecules.some(molecule => molecule.isAt(position))) return;
         if (!this.lastPosition.isNeighbor(position)) return;
 
         this.selected.shape.push(position);

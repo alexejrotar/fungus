@@ -5,15 +5,8 @@ class Molecule {
         this.color = color;
     }
 
-    getPartAt(position) {
-        const part = this.shape.find(other => {
-            return other.equals(position);
-        })
-        if (part) {
-            return part;
-        } else {
-            return undefined;
-        }
+    isAt(position) {
+        return this.shape.some(other => other.equals(position));
     }
 
     transform(transformation, dissolve = () => { }) {
@@ -30,7 +23,7 @@ class Molecule {
     }
 
     overlaps(molecule) {
-        return this.shape.some(position => molecule.getPartAt(position) !== undefined);
+        return this.shape.some(position => molecule.isAt(position));
     }
 
     render(ctx) {
@@ -58,24 +51,21 @@ class DraggableMolecule {
     constructor(molecule) {
         this.molecule = molecule;
         this.selected = undefined;
-        this.currentPosition = undefined;
     }
 
     mousedown(position) {
-        this.selected = this.molecule.getPartAt(position);
-        this.currentPosition = position;
+        this.selected = this.molecule.isAt(position) ? position : undefined;
     }
 
     mousemoved(position, tryMove, dissolve) {
         if (!this.selected) return;
 
-        if (!position.isNeighbor(this.currentPosition)) return;
+        if (!position.isNeighbor(this.selected)) return;
 
         const previous = this.molecule;
         this.molecule = this.molecule.transform(new Transpose(this.selected, position), () => dissolve(this));
 
         if (tryMove(this, this.molecule)) {
-            this.currentPosition = position;
             this.selected = position;
         } else {
             this.molecule = previous;
@@ -86,19 +76,17 @@ class DraggableMolecule {
         this.selected = undefined;
     }
 
-    // TODO
     left(tryMove, dissolve) {
-        if (!this.selected) return;
-        const previous = this.molecule;
-        this.molecule = this.molecule.transform(new Rotation(this.selected, 1), () => dissolve(this));
-        if (!tryMove(this, this.molecule)) {
-            this.molecule = previous;
-        }
+        this.rotate(tryMove, dissolve, new Rotation(this.selected, 1));
     }
     right(tryMove, dissolve) {
+        this.rotate(tryMove, dissolve, new Rotation(this.selected, -1));
+    }
+
+    rotate(tryMove, dissolve, rotation) {
         if (!this.selected) return;
         const previous = this.molecule;
-        this.molecule = this.molecule.transform(new Rotation(this.selected, -1), () => dissolve(this));
+        this.molecule = this.molecule.transform(rotation, () => dissolve(this));
         if (!tryMove(this, this.molecule)) {
             this.molecule = previous;
         }
@@ -112,8 +100,8 @@ class DraggableMolecule {
         return this.molecule.overlaps(molecule);
     }
 
-    getPartAt(position) {
-        return this.molecule.getPartAt(position);
+    isAt(position) {
+        return this.molecule.isAt(position);
     }
 }
 
@@ -123,20 +111,12 @@ class Transpose {
         this.target = target;
     }
 
-    offset() {
-        return this.target.subtract(this.source);
-    }
-
-    cartesianOffset(grid) {
+    transform(position, grid) {
         const cartesianSource = grid.getCartesian(this.source);
         const cartesianTarget = grid.getCartesian(this.target);
-        return cartesianTarget.subtract(cartesianSource);
-    }
+        const transposeOffset = cartesianTarget.subtract(cartesianSource);
 
-    transform(position, grid) {
-        const transposeOffset = this.cartesianOffset(grid);
-        let cartesian = grid.getCartesian(position)
-            .add(transposeOffset);
+        let cartesian = grid.getCartesian(position).add(transposeOffset);
         return grid.getPosition(cartesian);
     }
 
@@ -171,18 +151,5 @@ class Rotation {
             .add(rotationOffset);
 
         return grid.getPosition(cartesian);
-    }
-}
-
-class MoleculeTypeA extends Molecule {
-    constructor(grid, color = "#0aa") {
-        const shape = [
-            new Position(0, 0, 0),
-            new Position(1, 0, 0),
-            new Position(2, 0, 0),
-            new Position(0, 1, 0)
-        ]
-
-        super(shape, grid, color);
     }
 }

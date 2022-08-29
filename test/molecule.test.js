@@ -1,3 +1,16 @@
+class MoleculeTypeA extends Molecule {
+    constructor(grid, color = "#0aa") {
+        const shape = [
+            new Position(0, 0, 0),
+            new Position(1, 0, 0),
+            new Position(2, 0, 0),
+            new Position(0, 1, 0)
+        ]
+
+        super(shape, grid, color);
+    }
+}
+
 {
     const runner = new VisualTestRunner(500, 500);
 
