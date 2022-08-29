@@ -18,7 +18,7 @@ class Editor {
             this.molecules = this.molecules.filter(other => other !== molecule);
             this.updateOutput();
         } else {
-            molecule = new Molecule([new Part(position)], this.grid, "#2ab");
+            molecule = new Molecule([new Part(position)], this.grid, randomColor());
             this.molecules.push(molecule);
             this.selected = molecule;
             this.lastPosition = position;
@@ -68,4 +68,12 @@ function startEditor() {
     const grid = new ReactiveGrid(new Grid(20, new Cartesian(canvas.width/2, canvas.height/2), 15, "#666"), canvas);
     const editor = new Editor(grid, canvas);
     editor.start();
+}
+
+function randomColor() {
+    const random = (lower, upper) => Math.floor(Math.random() * (upper - lower)) + lower;
+    const red = random(64, 256);
+    const green = random(64, 256);
+    const blue = random(64, 256);
+    return `rgb(${red}, ${green}, ${blue})`;
 }
