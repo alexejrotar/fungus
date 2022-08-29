@@ -15,15 +15,14 @@ class Game {
         const { g, m } = this.levelDescriptions.shift();
 
         let grid = new Grid(g.r, new Cartesian(g.c.x, g.c.y), g.s, "#777");
-        grid = new ReactiveGrid(grid, canvas);
 
         const molecules = m.map(({ s, c }) => {
-            const shape = s.map(pos => new Part(new Position(...pos)));
+            const shape = s.map(pos => new Position(...pos));
             const molecule = new Molecule(shape, grid, c);
             return new DraggableMolecule(molecule);
         })
 
-        this.currentLevel = new Level(grid, molecules, this.nextLevel.bind(this));
+        this.currentLevel = new Level(new ReactiveGrid(grid, this.canvas), molecules, this.nextLevel.bind(this));
     }
 
     render() {

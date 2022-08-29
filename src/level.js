@@ -4,11 +4,11 @@ class Level {
         this.color = "#222";
         this.completed = completed;
         this.grid = grid
-            .withMousedownListener(position => this.handleMousedown(position))
-            .withMousemoveListener(position => this.handleMousemove(position))
-            .withMouseupListener(position => this.handleMouseup(position))
-            .withLeftListener(this.handleLeft.bind(this))
-            .withRightListener(this.handleRight.bind(this));
+            .withListener("mousedown", position => this.handleMousedown(position))
+            .withListener("mousemove", position => this.handleMousemove(position))
+            .withListener("mouseup", position => this.handleMouseup(position))
+            .withListener("left", this.handleLeft.bind(this))
+            .withListener("right", this.handleRight.bind(this));
     }
 
     tryMove(source, target) {

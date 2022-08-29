@@ -14,16 +14,6 @@
         hexagon.render(ctx);
     })
 
-    runner.test("a partial hexagon", (canvas) => {
-        const ctx = canvas.getContext("2d");
-        const hexagon = new RenderedHexagon(new PartialHexagon(
-            new Hexagon(50, new Cartesian(50, 50)),
-            [0, 1, 2]
-        ));
-        hexagon.render(ctx);
-
-    })
-
     runner.test("a simple grid", (canvas) => {
         const ctx = canvas.getContext("2d");
         const grid = new Grid(30, new Cartesian(200, 200), 5);
@@ -38,11 +28,11 @@
                 canvas
             );
         grid = grid
-            .withMousedownListener((position) => console.log(`clicked at ${position.coordinates}`))
-            .withMousemoveListener((position) => console.log(`moved to ${position.coordinates}`))
-            .withMouseupListener((position) => console.log(`released at ${position.coordinates}`))
-            .withLeftListener(() => console.log("left"))
-            .withRightListener(() => console.log("right"));
+            .withListener("mousedown", (position) => console.log(`clicked at ${position.coordinates}`))
+            .withListener("mousemove", (position) => console.log(`moved to ${position.coordinates}`))
+            .withListener("mouseup", (position) => console.log(`released at ${position.coordinates}`))
+            .withListener("left", () => console.log("left"))
+            .withListener("right", () => console.log("right"));
         grid.render(ctx);
     })
 

@@ -162,47 +162,14 @@ class ReactiveGrid {
         })
     }
 
-    withMousedownListener(callback) {
-        this.listeners.mousedown.push(callback);
+    withListener(eventName, callback) {
+        if (!eventName in this.listeners) return;
+        this.listeners[eventName].push(callback);
         return this;
-    }
-    withMouseupListener(callback) {
-        this.listeners.mouseup.push(callback);
-        return this;
-    }
-    withMousemoveListener(callback) {
-        this.listeners.mousemove.push(callback);
-        return this;
-    }
-
-    withLeftListener(callback) {
-        this.listeners.left.push(callback);
-        return this;
-    }
-
-    withRightListener(callback) {
-        this.listeners.right.push(callback);
-        return this;
-    }
-
-    getHexagon(position) {
-        return this.grid.getHexagon(position);
-    }
-
-    getCartesian(position) {
-        return this.grid.getCartesian(position);
-    }
-
-    getPosition(cartesian) {
-        return this.grid.getPosition(cartesian);
     }
 
     render(ctx) {
         this.grid.render(ctx);
-    }
-
-    isInside(position) {
-        return this.grid.isInside(position);
     }
 
     output() {

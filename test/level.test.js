@@ -5,9 +5,9 @@
         const ctx = canvas.getContext("2d");
         const grid = defaultGrid(canvas);
         const molecules = [];
-        const level = new Level(grid, molecules);
+        const level = new Level(new ReactiveGrid(grid, canvas), molecules);
         
-        level.molecules.push(new DraggableMolecule((new MoleculeTypeA(grid)).moveTo(new Transform(new Position(0, 0, 0), new Position(2, 0, 2)))));
+        level.molecules.push(new DraggableMolecule((new MoleculeTypeA(grid)).transform(new Transpose(new Position(0, 0, 0), new Position(2, 0, 2)))));
         level.molecules.push(new DraggableMolecule(new MoleculeTypeA(grid)));
         window.setInterval(() => {
             ctx.save();
@@ -18,8 +18,8 @@
         }, 100)
     })
 
-    function defaultGrid(canvas) {
-        return new ReactiveGrid(new Grid(30, new Cartesian(300, 300), 6, "#555"), canvas);
+    function defaultGrid() {
+        return new Grid(30, new Cartesian(300, 300), 6, "#555");
     }
 
     runner.run();

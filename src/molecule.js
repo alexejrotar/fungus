@@ -6,78 +6,50 @@ class Molecule {
     }
 
     getPartAt(position) {
-        const part = this.shape.find(part => {
-            const partPosition = part.getPosition();
-            return partPosition.equals(position);
+        const part = this.shape.find(other => {
+            return other.equals(position);
         })
         if (part) {
-            return part.getPosition();
+            return part;
         } else {
             return undefined;
         }
     }
 
-    moveTo(transform, dissolve = () => { }) {
+    transform(transformation, dissolve = () => { }) {
         const movedMolecule = this.copy();
-        movedMolecule.shape = movedMolecule.shape.map(part => {
-            const newPart = part.copy();
-            newPart.position = part.getTransposedPosition(transform, this.grid)
-            return newPart;
+        movedMolecule.shape = movedMolecule.shape.map(position => {
+            const newPosition = transformation.transform(position, this.grid);
+            return newPosition;
         })
 
-        if (movedMolecule.shape.every(part => {
-            const position = part.getPosition();
-            return !this.grid.isInside(position);
-        })) {
+        if (movedMolecule.shape.every(position => !this.grid.isInside(position))) {
             dissolve();
         }
         return movedMolecule;
     }
 
-    rotate(rotation, dissolve = () => { }) {
-        const rotatedMolecule = this.copy();
-        rotatedMolecule.shape = rotatedMolecule.shape.map(part => {
-            const newPart = part.copy();
-            newPart.position = part.getRotatedPosition(rotation, this.grid)
-            return newPart;
-        });
-        if (rotatedMolecule.shape.every(part => {
-            const position = part.getPosition();
-            return !this.grid.isInside(position);
-        })) {
-            dissolve();
-        }
-        return rotatedMolecule;
-    }
-
     overlaps(molecule) {
-        return this.shape.some(part => {
-            const position = part.getPosition();
-            return molecule.getPartAt(position) !== undefined;
-        });
+        return this.shape.some(position => molecule.getPartAt(position) !== undefined);
     }
 
     render(ctx) {
         ctx.save();
         ctx.lineWidth = 3;
-        this.shape.forEach(part => {
-            const position = part.getPosition();
+        this.shape.forEach(position => {
             let hexagon = this.grid.getHexagon(position);
-            if (part.sides) {
-                hexagon = new PartialHexagon(hexagon, part.sides);
-            }
             (new RenderedHexagon(hexagon, this.color, true)).render(ctx);
         })
         ctx.restore();
     }
 
     copy() {
-        const molecule = new Molecule(this.shape.map(part => part.copy()), this.grid, this.color);
+        const molecule = new Molecule(this.shape.map(position => position.copy()), this.grid, this.color);
         return molecule;
     }
 
     output() {
-        return { c: this.color, s: this.shape.map(part => part.output()) };
+        return { c: this.color, s: this.shape.map(position => position.output()) };
     }
 }
 
@@ -100,7 +72,7 @@ class DraggableMolecule {
         if (!position.isNeighbor(this.currentPosition)) return;
 
         const previous = this.molecule;
-        this.molecule = this.molecule.moveTo(new Transform(this.selected, position), () => dissolve(this));
+        this.molecule = this.molecule.transform(new Transpose(this.selected, position), () => dissolve(this));
 
         if (tryMove(this, this.molecule)) {
             this.currentPosition = position;
@@ -118,7 +90,7 @@ class DraggableMolecule {
     left(tryMove, dissolve) {
         if (!this.selected) return;
         const previous = this.molecule;
-        this.molecule = this.molecule.rotate(new Rotation(this.selected, 1), () => dissolve(this));
+        this.molecule = this.molecule.transform(new Rotation(this.selected, 1), () => dissolve(this));
         if (!tryMove(this, this.molecule)) {
             this.molecule = previous;
         }
@@ -126,7 +98,7 @@ class DraggableMolecule {
     right(tryMove, dissolve) {
         if (!this.selected) return;
         const previous = this.molecule;
-        this.molecule = this.molecule.rotate(new Rotation(this.selected, -1), () => dissolve(this));
+        this.molecule = this.molecule.transform(new Rotation(this.selected, -1), () => dissolve(this));
         if (!tryMove(this, this.molecule)) {
             this.molecule = previous;
         }
@@ -145,7 +117,7 @@ class DraggableMolecule {
     }
 }
 
-class Transform {
+class Transpose {
     constructor(source, target) {
         this.source = source;
         this.target = target;
@@ -161,8 +133,15 @@ class Transform {
         return cartesianTarget.subtract(cartesianSource);
     }
 
+    transform(position, grid) {
+        const transposeOffset = this.cartesianOffset(grid);
+        let cartesian = grid.getCartesian(position)
+            .add(transposeOffset);
+        return grid.getPosition(cartesian);
+    }
+
     copy() {
-        return new Transform(this.source.copy(), this.target.copy());
+        return new Transpose(this.source.copy(), this.target.copy());
     }
 }
 
@@ -185,60 +164,23 @@ class Rotation {
 
         return rotated.subtract(cartesian);
     }
-}
 
-class Part {
-    constructor(position, sides) {
-        this.position = position;
-        this.sides = sides;
-    }
-
-    getTransposedPosition(transpose, grid) {
-        const transposeOffset = transpose.cartesianOffset(grid);
-        let cartesian = grid.getCartesian(this.position)
-            .add(transposeOffset);
-        return grid.getPosition(cartesian);
-    }
-
-    getRotatedPosition(rotation, grid) {
-        const rotationOffset = rotation.cartesianOffset(grid, this.position);
-        let cartesian = grid.getCartesian(this.position)
+    transform(position, grid) {
+        const rotationOffset = this.cartesianOffset(grid, position);
+        let cartesian = grid.getCartesian(position)
             .add(rotationOffset);
 
         return grid.getPosition(cartesian);
-    }
-
-    getTransformedPosition(transform, rotation, grid) {
-        const transposeOffset = transform.cartesianOffset(grid);
-        const rotationOffset = rotation.cartesianOffset(grid, this.position);
-        let cartesian = grid.getCartesian(this.position)
-            .add(transposeOffset)
-            .add(rotationOffset);
-
-
-        return grid.getPosition(cartesian);
-    }
-
-    getPosition() {
-        return this.position.copy();
-    }
-
-    copy() {
-        return new Part(this.position.copy(), this.sides ? [...this.sides] : undefined);
-    }
-
-    output() {
-        return this.position.output()
     }
 }
 
 class MoleculeTypeA extends Molecule {
     constructor(grid, color = "#0aa") {
         const shape = [
-            new Part(new Position(0, 0, 0)),
-            new Part(new Position(1, 0, 0), [0, 5]),
-            new Part(new Position(2, 0, 0)),
-            new Part(new Position(0, 1, 0), [4, 5])
+            new Position(0, 0, 0),
+            new Position(1, 0, 0),
+            new Position(2, 0, 0),
+            new Position(0, 1, 0)
         ]
 
         super(shape, grid, color);

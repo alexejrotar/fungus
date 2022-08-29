@@ -4,10 +4,11 @@ class Editor {
         this.molecules = [];
         this.selected = undefined;
         this.lastPosition = undefined;
-        this.grid = grid
-            .withMousedownListener(this.handleMousedown.bind(this))
-            .withMousemoveListener(this.handleMousemove.bind(this))
-            .withMouseupListener(this.handleMouseup.bind(this));
+        this.grid = grid;
+        (new ReactiveGrid(this.grid, canvas))
+            .withListener("mousedown", this.handleMousedown.bind(this))
+            .withListener("mousemove", this.handleMousemove.bind(this))
+            .withListener("mouseup", this.handleMouseup.bind(this));
         this.updateOutput();
     }
 
@@ -18,7 +19,7 @@ class Editor {
             this.molecules = this.molecules.filter(other => other !== molecule);
             this.updateOutput();
         } else {
-            molecule = new Molecule([new Part(position)], this.grid, randomColor());
+            molecule = new Molecule([position], this.grid, randomColor());
             this.molecules.push(molecule);
             this.selected = molecule;
             this.lastPosition = position;
@@ -30,7 +31,7 @@ class Editor {
         if (this.molecules.find(molecule => molecule.getPartAt(position) !== undefined) !== undefined) return;
         if (!this.lastPosition.isNeighbor(position)) return;
 
-        this.selected.shape.push(new Part(position));
+        this.selected.shape.push(position);
         this.lastPosition = position;
     }
 
@@ -65,7 +66,7 @@ class Editor {
 
 function startEditor() {
     const canvas = document.getElementById("canvas");
-    const grid = new ReactiveGrid(new Grid(15, new Cartesian(canvas.width/2, canvas.height/2), 15, "#666"), canvas);
+    const grid = new Grid(15, new Cartesian(canvas.width / 2, canvas.height / 2), 15, "#666");
     const editor = new Editor(grid, canvas);
     editor.start();
 }
