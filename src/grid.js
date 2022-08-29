@@ -63,7 +63,7 @@ class Grid {
                 const candidatePosition = new Position(...candidate);
                 const candidateCartesian = this.getCartesian(candidatePosition).subtract(this.center);
                 const distance = cartesian.distance(candidateCartesian);
-                if (!minDistance || distance < minDistance) {
+                if (minDistance === undefined || distance < minDistance) {
                     minDistance = distance;
                     position = candidatePosition;
                 }
