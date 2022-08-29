@@ -1,0 +1,14 @@
+body {
+    background-color: #222;
+    font-family:'Courier New', Courier, monospace;
+}
+
+h1 {
+    color: white;
+    text-align: center;
+}
+
+.game {
+    width: 1000px;
+    margin: auto;
+}

@@ -65,15 +65,20 @@ class Editor {
 
 function startEditor() {
     const canvas = document.getElementById("canvas");
-    const grid = new ReactiveGrid(new Grid(20, new Cartesian(canvas.width/2, canvas.height/2), 15, "#666"), canvas);
+    const grid = new ReactiveGrid(new Grid(15, new Cartesian(canvas.width/2, canvas.height/2), 15, "#666"), canvas);
     const editor = new Editor(grid, canvas);
     editor.start();
 }
 
 function randomColor() {
     const random = (lower, upper) => Math.floor(Math.random() * (upper - lower)) + lower;
-    const red = random(64, 256);
-    const green = random(64, 256);
-    const blue = random(64, 256);
+    const red = random(100, 256);
+    const green = random(100, 256);
+    const blue = random(100, 256);
     return `rgb(${red}, ${green}, ${blue})`;
+}
+
+function copyToClipboard(event) {
+    navigator.clipboard.writeText(event.target.innerHTML)
+        .then(() => console.log("copied"))
 }
