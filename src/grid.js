@@ -112,6 +112,10 @@ class Grid {
     isInside(position) {
         return position.every(coordinate => coordinate < this.size);
     }
+
+    output() {
+        return { c: this.center.output(), r: this.radius, s: this.size };
+    }
 }
 
 // TODO create extend function to automatically provide default implementations
@@ -200,6 +204,10 @@ class ReactiveGrid {
     isInside(position) {
         return this.grid.isInside(position);
     }
+
+    output() {
+        return this.grid.output();
+    }
 }
 
 class Position {
@@ -252,6 +260,7 @@ class Position {
         return new Position(...coordinates);
     }
 
+    // TODO not always correct
     isNeighbor(other) {
         const offset = this.coordinates
             .map((_, i) => Math.abs(other.coordinates[i] - this.coordinates[i]));
@@ -260,6 +269,10 @@ class Position {
 
     copy() {
         return new Position(...this.coordinates);
+    }
+
+    output() {
+        return [...this.coordinates];
     }
 }
 
@@ -279,5 +292,9 @@ class Cartesian {
 
     distance(other) {
         return Math.sqrt((other.x - this.x) ** 2 + (other.y - this.y) ** 2);
+    }
+
+    output() {
+        return { x: this.x, y: this.y };
     }
 }

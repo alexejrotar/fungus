@@ -7,7 +7,8 @@ class Editor {
         this.grid = grid
             .withMousedownListener(this.handleMousedown.bind(this))
             .withMousemoveListener(this.handleMousemove.bind(this))
-            .withMouseupListener(this.handleMouseup.bind(this))
+            .withMouseupListener(this.handleMouseup.bind(this));
+        this.updateOutput();
     }
 
     handleMousedown(position) {
@@ -15,6 +16,7 @@ class Editor {
 
         if (molecule !== undefined) {
             this.molecules = this.molecules.filter(other => other !== molecule);
+            this.updateOutput();
         } else {
             molecule = new Molecule([new Part(position)], this.grid, "#2ab");
             this.molecules.push(molecule);
@@ -34,7 +36,16 @@ class Editor {
 
     handleMouseup() {
         this.selected = undefined;
-        console.log(JSON.stringify(this.molecules));
+        this.updateOutput();
+    }
+
+    updateOutput() {
+        const outputContainer = document.getElementById("output");
+        const output = {
+            g: this.grid.output(),
+            m: this.molecules.map(molecule => molecule.output()),
+        };
+        outputContainer.innerHTML = JSON.stringify(output);
     }
 
     start() {

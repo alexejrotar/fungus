@@ -75,6 +75,10 @@ class Molecule {
         const molecule = new Molecule(this.shape.map(part => part.copy()), this.grid, this.color);
         return molecule;
     }
+
+    output() {
+        return { c: this.color, s: this.shape.map(part => part.output()) };
+    }
 }
 
 // TODO get rid of undefined
@@ -221,6 +225,10 @@ class Part {
 
     copy() {
         return new Part(this.position.copy(), this.sides ? [...this.sides] : undefined);
+    }
+
+    output() {
+        return this.position.output()
     }
 }
 
