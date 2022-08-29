@@ -1,3 +1,4 @@
+// TODO fix calculation of positions
 class Grid {
     constructor(radius, center, size, color = "#000") {
         this.radius = radius;
@@ -38,7 +39,7 @@ class Grid {
         const v = position.coordinates;
 
         const cartesian = this.center
-            .add(new Cartesian(0, -v[2] * 2 * r * sin(PI / 3) ))
+            .add(new Cartesian(0, -v[2] * 2 * r * sin(PI / 3)))
             .add(new Cartesian((v[0] - v[1]) * (r + r * cos(PI / 3)), (v[0] + v[1]) * r * sin(PI / 3)));
 
         return cartesian;
@@ -47,7 +48,7 @@ class Grid {
     // TODO
     getPosition(cartesian) {
         const r = this.radius;
-        const { sin, cos, PI } = Math;
+        const { sin, cos, PI, floor, ceil } = Math;
         cartesian = cartesian.subtract(this.center);
 
         const vectorCoordinates = (u, v) => ({
@@ -55,18 +56,57 @@ class Grid {
             b: (cartesian.y * u.x - cartesian.x * u.y) / (u.x * v.y - u.y * v.x)
         });
 
+        const roundToCenter = (candidates) => {
+            let minDistance;
+            let position;
+            for (const candidate of candidates) {
+                const candidatePosition = new Position(...candidate);
+                const candidateCartesian = this.getCartesian(candidatePosition).subtract(this.center);
+                const distance = cartesian.distance(candidateCartesian);
+                if (!minDistance || distance < minDistance) {
+                    minDistance = distance;
+                    position = candidatePosition;
+                }
+            }
+            return position;
+        }
+
         const u = new Cartesian(r + r * cos(PI / 3), r * sin(PI / 3));
         const v = new Cartesian(- (r + r * cos(PI / 3)), r * sin(PI / 3));
         const w = new Cartesian(0, - 2 * r * sin(PI / 3));
 
         let c = vectorCoordinates(u, v);
-        if (c.a >= 0 && c.b >= 0) return new Position(...([c.a, c.b, 0].map(n => Math.round(n))));
+        if (c.a >= 0 && c.b >= 0) {
+            const canditates = [
+                [floor(c.a), floor(c.b), 0],
+                [floor(c.a), ceil(c.b), 0],
+                [ceil(c.a), ceil(c.b), 0],
+                [ceil(c.a), floor(c.b), 0],
+            ];
+            return roundToCenter(canditates);
+        };
 
         c = vectorCoordinates(u, w);
-        if (c.a >= 0 && c.b >= 0) return new Position(...([c.a, 0, c.b].map(n => Math.round(n))));
+        if (c.a >= 0 && c.b >= 0) {
+            const canditates = [
+                [floor(c.a), 0, floor(c.b)],
+                [floor(c.a), 0, ceil(c.b)],
+                [ceil(c.a), 0, ceil(c.b)],
+                [ceil(c.a), 0, floor(c.b)],
+            ];
+            return roundToCenter(canditates);
+        };
 
         c = vectorCoordinates(v, w);
-        if (c.a >= 0 && c.b >= 0) return new Position(...([0, c.a, c.b].map(n => Math.round(n))));
+        if (c.a >= 0 && c.b >= 0) {
+            const canditates = [
+                [0, floor(c.a), floor(c.b)],
+                [0, floor(c.a), ceil(c.b)],
+                [0, ceil(c.a), ceil(c.b)],
+                [0, ceil(c.a), floor(c.b)],
+            ];
+            return roundToCenter(canditates);
+        };
     }
 
     isInside(position) {
@@ -238,6 +278,6 @@ class Cartesian {
     }
 
     distance(other) {
-        return Math.sqrt((other.x - this.x)**2 + (other.y - this.y)**2);
+        return Math.sqrt((other.x - this.x) ** 2 + (other.y - this.y) ** 2);
     }
 }
