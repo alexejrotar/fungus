@@ -95,11 +95,12 @@ class ReactiveGrid {
     }
 }
 
+// TODO more consistent use of vector
 class Position {
     constructor(u, v, w) {
-        const cartesian = new Matrix(Position.axes()).transpose().multiply([u, v, w]);
+        const cartesian = new Matrix(Position.axes()).transpose().multiply(new Vector(u, v, w));
 
-        const { baseIndex, vector } = Position.solveFor(new Vector(...cartesian));
+        const { baseIndex, vector } = Position.solveFor(cartesian);
         vector.splice(baseIndex, 0, 0);
         this.coordinates = vector.map(x => Math.round(x));
     }
@@ -138,8 +139,8 @@ class Position {
         for (let i = 0; i < 3; i++) {
             const base = Position.axes().filter((_, j) => i !== j);
             const matrix = new Matrix(base).transpose().invert();
-            const v = matrix.multiply(cartesian.v);
-            if (v.every(x => x >= 0)) return { baseIndex: i, vector: v };
+            const vector = matrix.multiply(cartesian);
+            if (vector.v.every(x => x >= 0)) return { baseIndex: i, vector: vector.v };
         }
     }
 
@@ -160,8 +161,7 @@ class Position {
             [sin(PI / 3), sin(PI / 3), - 2 * sin(PI / 3)]
         ]);
 
-        const vector = matrix.multiply(this.coordinates);
-        return new Vector(...vector);
+        return matrix.multiply(new Vector(...this.coordinates));
     }
 
     static *circle(radius) {
@@ -208,7 +208,7 @@ class Matrix {
     }
 
     multiply(vector) {
-        return this.rows.map(row => row.reduce((sum, u, i) => sum + u * vector[i], 0));
+        return new Vector(...this.rows.map(row => vector.dotProduct(new Vector(...row))));
     }
 
     scale(factor) {
