@@ -27,6 +27,16 @@ class Grid {
         return Position.fromNormalizedCartesian(normalizedCartesian);
     }
 
+    *traceToPositions(trace) {
+        let currentPosition = new Position(0, 0, 0);
+        for (const cartesian of trace) {
+            const position = this.getPosition(cartesian);
+            if (currentPosition.equals(position)) continue;
+            currentPosition = position;
+            yield position;
+        }
+    }
+
     // TODO
     isInside(position) {
         return position.every(coordinate => coordinate < this.size);

@@ -64,7 +64,11 @@ class DraggableMolecule {
         if (!this.selected) return;
 
         const previous = this.molecule;
-        this.molecule = this.molecule.transform(new Transpose(this.selected, position), () => dissolve(this), isOccupied);
+        this.molecule = this.molecule.transform(
+            new Transform(new Transpose(this.selected, position)),
+            () => dissolve(this),
+            isOccupied,
+        );
 
         if (previous !== this.molecule) {
             this.selected = position;
@@ -84,7 +88,7 @@ class DraggableMolecule {
 
     rotate(dissolve, isOccupied, rotation) {
         if (!this.selected) return;
-        this.molecule = this.molecule.transform(rotation, () => dissolve(this), isOccupied);
+        this.molecule = this.molecule.transform(new Transform(rotation), () => dissolve(this), isOccupied);
     }
 
     render(ctx) {
@@ -100,20 +104,26 @@ class DraggableMolecule {
     }
 }
 
+class Transform {
+    constructor(transformation) {
+        this.transformation = transformation;
+    }
+
+    transform(position, grid, isOccupied, abort) {
+        const trace = this.transformation.getTrace(position, grid);
+        const positions = Array.from(grid.traceToPositions(trace));
+
+        return positions.reduce((_, transformed) => {
+            if (isOccupied(transformed)) abort();
+            return transformed;
+        }, position)
+    }
+}
+
 class Transpose {
     constructor(source, target) {
         this.source = source;
         this.target = target;
-    }
-
-    transform(position, grid, isOccupied, abort) {
-        const trace = this.getTrace(position, grid);
-
-        return trace.reduce((_, cartesian) => {
-            const transposedPosition = grid.getPosition(cartesian);
-            if (isOccupied(transposedPosition)) abort();
-            return transposedPosition;
-        })
     }
 
     getTrace(position, grid) {
@@ -135,15 +145,6 @@ class Rotation {
     constructor(pivot, rotation) {
         this.pivot = pivot;
         this.rotation = rotation;
-    }
-    transform(position, grid, isOccupied, abort) {
-        const trace = this.getTrace(position, grid);
-        return trace.reduce((_, cartesian) => {
-            const rotatedPosition = grid.getPosition(cartesian);
-            if (isOccupied(rotatedPosition)) abort();
-            return rotatedPosition;
-        })
-
     }
 
     getTrace(position, grid) {

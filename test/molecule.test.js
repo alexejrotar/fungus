@@ -25,7 +25,7 @@ class MoleculeTypeA extends Molecule {
     runner.test("a moved molecule", (canvas) => {
         const ctx = canvas.getContext("2d");
         const grid = defaultGrid();
-        const molecule = (new MoleculeTypeA(grid)).transform(new Transpose(new Position(0, 0, 0), new Position(0, 1, 0)));
+        const molecule = (new MoleculeTypeA(grid)).transform(new Transform(new Transpose(new Position(0, 0, 0), new Position(0, 1, 0))));
         grid.render(ctx);
         molecule.render(ctx);
     })
@@ -35,7 +35,7 @@ class MoleculeTypeA extends Molecule {
         runner.test(`a ${rotation} rotated molecule`, (canvas) => {
             const ctx = canvas.getContext("2d");
             const grid = defaultGrid();
-            const molecule = (new MoleculeTypeA(grid)).transform(new Rotation(new Position(0, 0, 0), rotation));
+            const molecule = (new MoleculeTypeA(grid)).transform(new Transform(new Rotation(new Position(0, 0, 0), rotation)));
             grid.render(ctx);
             molecule.render(ctx);
         })

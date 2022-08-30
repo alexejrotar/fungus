@@ -7,7 +7,7 @@
         const molecules = [];
         const level = new Level(new ReactiveGrid(grid, canvas), molecules);
         
-        level.molecules.push(new DraggableMolecule((new MoleculeTypeA(grid)).transform(new Transpose(new Position(0, 0, 0), new Position(2, 0, 2)))));
+        level.molecules.push(new DraggableMolecule((new MoleculeTypeA(grid)).transform(new Transform(new Transpose(new Position(0, 0, 0), new Position(2, 0, 2))))));
         level.molecules.push(new DraggableMolecule(new MoleculeTypeA(grid)));
         window.setInterval(() => {
             ctx.save();
