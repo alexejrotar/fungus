@@ -29,7 +29,6 @@ class Editor {
     handleMousemove(position) {
         if (this.selected === undefined) return;
         if (this.molecules.some(molecule => molecule.isAt(position))) return;
-        if (!this.lastPosition.isNeighbor(position)) return;
 
         this.selected.shape.push(position);
         this.lastPosition = position;

@@ -1,18 +1,23 @@
 class Game {
-    constructor(levelDescriptions, canvas) {
+    constructor(levelDescriptions, canvas, introWrapper) {
         this.canvas = canvas;
         this.levelDescriptions = levelDescriptions;
+        this.introWrapper = introWrapper;
         this.currentLevel = undefined;
+        this.introText = "";
     }
 
     start() {
         this.nextLevel();
+        this.introWrapper.addEventListener("click", () => this.closeIntro());
         window.setInterval(() => this.render(), 10)
     }
 
     nextLevel() {
         if (this.levelDescriptions.length === 0) return;
-        const { g, m } = this.levelDescriptions.shift();
+        const { g, m, t } = this.levelDescriptions.shift();
+        this.introWrapper.innerHTML = t;
+        this.introWrapper.classList.remove("closed");
 
         let grid = new Grid(g.r, new Vector(...g.c), g.s, "#777");
 
@@ -25,8 +30,15 @@ class Game {
         this.currentLevel = new Level(new ReactiveGrid(grid, this.canvas), molecules, this.nextLevel.bind(this));
     }
 
+    closeIntro() {
+        this.introWrapper.classList.add("closed");
+    }
+
     render() {
         if (!this.currentLevel) return;
+        // if (this.introText.length > 0) {
+        //     this.introWrapper.innerHTML = this.introText;
+        // }
         const ctx = this.canvas.getContext("2d");
         ctx.save();
         ctx.fillStyle = "white";

@@ -195,13 +195,6 @@ class Position {
         return this.coordinates.every(predicate);
     }
 
-    // TODO not always correct
-    isNeighbor(other) {
-        const offset = this.coordinates
-            .map((_, i) => Math.abs(other.coordinates[i] - this.coordinates[i]));
-        return offset.every(distance => distance <= 1) && offset.filter(distance => distance !== 0).length <= 2;
-    }
-
     copy() {
         return new Position(...this.coordinates);
     }
