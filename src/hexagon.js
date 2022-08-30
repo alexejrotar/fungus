@@ -17,11 +17,11 @@ class Hexagon {
 
     getCartesian(index) {
         const cartesian = this.cartesian
-            .add(new Cartesian(
+            .add(new Vector(
                 this.radius * Math.cos(index * Math.PI / 3),
                 this.radius * Math.sin(index * Math.PI / 3)
             ))
-            .add(new Cartesian(
+            .add(new Vector(
                 Math.random() * 2 - 1,
                 Math.random() * 2 - 1));
         return cartesian;
@@ -42,9 +42,9 @@ class RenderedHexagon {
 
         ctx.strokeStyle = this.color;
         ctx.beginPath();
-        ctx.moveTo(sides[0][0].x, sides[0][0].y);
+        ctx.moveTo(sides[0][0].v[0], sides[0][0].v[1]);
         for (const side of sides) {
-            ctx.lineTo(side[1].x, side[1].y);
+            ctx.lineTo(side[1].v[0], side[1].v[1]);
         }
         ctx.stroke();
 

@@ -19,7 +19,7 @@
     })
 
     function defaultGrid() {
-        return new Grid(30, new Cartesian(300, 300), 6, "#555");
+        return new Grid(30, new Vector(300, 300), 6, "#555");
     }
 
     runner.run();

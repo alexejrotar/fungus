@@ -66,7 +66,7 @@ class Editor {
 
 function startEditor() {
     const canvas = document.getElementById("canvas");
-    const grid = new Grid(15, new Cartesian(canvas.width / 2, canvas.height / 2), 15, "#666");
+    const grid = new Grid(15, new Vector(canvas.width / 2, canvas.height / 2), 15, "#666");
     const editor = new Editor(grid, canvas);
     editor.start();
 }

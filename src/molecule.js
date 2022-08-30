@@ -137,9 +137,9 @@ class Rotation {
         const pivotCartesian = grid.getCartesian(this.pivot);
         const cartesian = grid.getCartesian(position).subtract(pivotCartesian);
         const angle = this.rotation * PI / 3;
-        const rotated = new Cartesian(
-            cartesian.x * cos(angle) - cartesian.y * sin(angle),
-            cartesian.x * sin(angle) + cartesian.y * cos(angle),
+        const rotated = new Vector(
+            cartesian.v[0] * cos(angle) - cartesian.v[1] * sin(angle),
+            cartesian.v[0] * sin(angle) + cartesian.v[1] * cos(angle),
         );
 
         return rotated.subtract(cartesian);

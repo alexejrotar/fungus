@@ -4,19 +4,19 @@
 
     runner.test("a hexagon", (canvas) => {
         const ctx = canvas.getContext("2d");
-        const hexagon = new RenderedHexagon(new Hexagon(50, new Cartesian(50, 50)));
+        const hexagon = new RenderedHexagon(new Hexagon(50, new Vector(50, 50)));
         hexagon.render(ctx);
     })
 
     runner.test("a colored hexagon", (canvas) => {
         const ctx = canvas.getContext("2d");
-        const hexagon = new RenderedHexagon(new Hexagon(50, new Cartesian(50, 50)), "#ddd");
+        const hexagon = new RenderedHexagon(new Hexagon(50, new Vector(50, 50)), "#ddd");
         hexagon.render(ctx);
     })
 
     runner.test("a simple grid", (canvas) => {
         const ctx = canvas.getContext("2d");
-        const grid = new Grid(30, new Cartesian(200, 200), 5);
+        const grid = new Grid(30, new Vector(200, 200), 5);
         grid.render(ctx);
     })
 
@@ -24,7 +24,7 @@
         const ctx = canvas.getContext("2d");
         let grid =
             new ReactiveGrid(
-                new Grid(30, new Cartesian(200, 200), 5),
+                new Grid(30, new Vector(200, 200), 5),
                 canvas
             );
         grid = grid

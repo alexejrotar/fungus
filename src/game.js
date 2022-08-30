@@ -14,7 +14,7 @@ class Game {
         if (this.levelDescriptions.length === 0) return;
         const { g, m } = this.levelDescriptions.shift();
 
-        let grid = new Grid(g.r, new Cartesian(g.c.x, g.c.y), g.s, "#777");
+        let grid = new Grid(g.r, new Vector(...g.c), g.s, "#777");
 
         const molecules = m.map(({ s, c }) => {
             const shape = s.map(pos => new Position(...pos));
