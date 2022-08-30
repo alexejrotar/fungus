@@ -108,21 +108,6 @@ class Position {
     static fromNormalizedCartesian(cartesian) {
         const { ceil, floor } = Math;
 
-        const roundToCenter = (candidates) => {
-            let minDistance = Infinity;
-            let position;
-            for (const candidate of candidates) {
-                const candidatePosition = new Position(...candidate);
-                const candidateCartesian = candidatePosition.toNormalizedCartesian();
-                const distance = cartesian.distance(candidateCartesian);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    position = candidatePosition;
-                }
-            }
-            return position;
-        }
-
         const { baseIndex, vector } = Position.solveFor(cartesian);
         let candidates = [
             [floor(vector[0]), floor(vector[1])],
@@ -132,7 +117,21 @@ class Position {
         ];
 
         candidates.forEach(v => v.splice(baseIndex, 0, 0));
-        return roundToCenter(candidates);
+
+        let minDistance = Infinity;
+        let position;
+        for (const candidate of candidates) {
+
+            const candidatePosition = new Position(...candidate);
+            const candidateCartesian = candidatePosition.toNormalizedCartesian();
+            const distance = cartesian.distance(candidateCartesian);
+
+            if (distance < minDistance) {
+                minDistance = distance;
+                position = candidatePosition;
+            }
+        }
+        return position;
     }
 
     static solveFor(cartesian) {

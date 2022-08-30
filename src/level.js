@@ -11,8 +11,8 @@ class Level {
             .withListener("right", this.handleRight.bind(this));
     }
 
-    tryMove(source, target) {
-        return !this.molecules.some(molecule => molecule !== source && molecule.overlaps(target))
+    isOccupied(molecules, position) {
+        return molecules.some(molecule => molecule.isAt(position));
     }
 
     dissovle(molecule) {
@@ -35,7 +35,10 @@ class Level {
     }
 
     handleMousemove(position) {
-        this.molecules.forEach(molecule => molecule.mousemoved(position, this.tryMove.bind(this), this.dissovle.bind(this)));
+        this.molecules.forEach(molecule => molecule.mousemoved(
+            position,
+            this.dissovle.bind(this),
+            this.isOccupied.bind(this, this.molecules.filter(other => other !== molecule))));
     }
 
     handleMouseup(_) {
@@ -43,10 +46,14 @@ class Level {
     }
 
     handleLeft() {
-        this.molecules.forEach(molecule => molecule.left(this.tryMove.bind(this), this.dissovle.bind(this)));
+        this.molecules.forEach(molecule => molecule.left(
+            this.dissovle.bind(this),
+            this.isOccupied.bind(this, this.molecules.filter(other => other !== molecule))));
     }
 
     handleRight() {
-        this.molecules.forEach(molecule => molecule.right(this.tryMove.bind(this), this.dissovle.bind(this)));
+        this.molecules.forEach(molecule => molecule.right(
+            this.dissovle.bind(this),
+            this.isOccupied.bind(this, this.molecules.filter(other => other !== molecule))));
     }
 }
