@@ -45,6 +45,10 @@ class Grid {
     output() {
         return { c: this.center.output(), r: this.radius, s: this.size };
     }
+
+    static from(description) {
+        return new Grid(description.r, new Vector(...description.c), description.s, "#777");
+    }
 }
 
 // TODO enable removing of listeners

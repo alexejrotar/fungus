@@ -47,6 +47,14 @@ class Molecule {
     output() {
         return { c: this.color, s: this.shape.map(position => position.output()) };
     }
+
+    static from(description, grid) {
+        return description.map(({ s, c }) => {
+            const shape = s.map(pos => new Position(...pos));
+            const molecule = new Molecule(shape, grid, c);
+            return new DraggableMolecule(molecule);
+        })
+    }
 }
 
 // TODO get rid of undefined

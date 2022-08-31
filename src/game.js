@@ -19,13 +19,8 @@ class Game {
         this.introWrapper.innerHTML = t;
         this.introWrapper.classList.remove("closed");
 
-        let grid = new Grid(g.r, new Vector(...g.c), g.s, "#777");
-
-        const molecules = m.map(({ s, c }) => {
-            const shape = s.map(pos => new Position(...pos));
-            const molecule = new Molecule(shape, grid, c);
-            return new DraggableMolecule(molecule);
-        })
+        let grid = Grid.from(g);
+        const molecules = Molecule.from(m, grid);
 
         this.currentLevel = new Level(new ReactiveGrid(grid, this.canvas), molecules, this.nextLevel.bind(this));
     }
@@ -36,9 +31,6 @@ class Game {
 
     render() {
         if (!this.currentLevel) return;
-        // if (this.introText.length > 0) {
-        //     this.introWrapper.innerHTML = this.introText;
-        // }
         const ctx = this.canvas.getContext("2d");
         ctx.save();
         ctx.fillStyle = "white";

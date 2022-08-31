@@ -1,15 +1,18 @@
 class Editor {
-    constructor(grid, canvas) {
+    constructor(grid, canvas, outputContainer) {
         this.canvas = canvas;
         this.molecules = [];
         this.selected = undefined;
         this.lastPosition = undefined;
+        this.outputContainer = outputContainer;
         this.grid = grid;
         (new ReactiveGrid(this.grid, canvas))
             .withListener("mousedown", this.handleMousedown.bind(this))
             .withListener("mousemove", this.handleMousemove.bind(this))
             .withListener("mouseup", this.handleMouseup.bind(this));
         this.updateOutput();
+
+        this.outputContainer.addEventListener("input", () => this.handleInput())
     }
 
     handleMousedown(position) {
@@ -40,12 +43,18 @@ class Editor {
     }
 
     updateOutput() {
-        const outputContainer = document.getElementById("output");
         const output = {
             g: this.grid.output(),
             m: this.molecules.map(molecule => molecule.output()),
         };
-        outputContainer.innerHTML = JSON.stringify(output);
+        this.outputContainer.innerHTML = JSON.stringify(output);
+    }
+
+    handleInput() {
+        const { g, m } = JSON.parse(this.outputContainer.innerHTML);
+        
+        let grid = Grid.from(g);
+        this.molecules = Molecule.from(m, grid);
     }
 
     start() {
@@ -65,8 +74,9 @@ class Editor {
 
 function startEditor() {
     const canvas = document.getElementById("canvas");
+    const outputArea = document.getElementById("output");
     const grid = new Grid(15, new Vector(canvas.width / 2, canvas.height / 2), 15, "#666");
-    const editor = new Editor(grid, canvas);
+    const editor = new Editor(grid, canvas, outputArea);
     editor.start();
 }
 
@@ -76,9 +86,4 @@ function randomColor() {
     const green = random(100, 256);
     const blue = random(100, 256);
     return `rgb(${red}, ${green}, ${blue})`;
-}
-
-function copyToClipboard(event) {
-    navigator.clipboard.writeText(event.target.innerHTML)
-        .then(() => console.log("copied"))
 }
