@@ -1,17 +1,20 @@
 const channels = 5;
+let playing = false;
 const ctx = new (window.AudioContext || window.webkitAudioContext)();
+const gain = ctx.createGain();
+gain.connect(ctx.destination);
 const merger = ctx.createChannelMerger(channels);
-merger.connect(ctx.destination);
+merger.connect(gain);
 
 class Music {
-  constructor() {
+  constructor(channels) {
     this.oscillators = [];
     this.createOscillators(channels);
   }
 
   createOscillators(number) {
     for (let i = 0; i < number; i++) {
-      this.oscillators.push(new Oscillator(i));
+      this.oscillators.push(new Oscillator(i, (i + 1) * 150 + 200, (i + 1) * 100));
     }
   }
 
@@ -23,31 +26,48 @@ class Music {
 
   off() {
     this.oscillators.forEach((osc) => {
-      osc.start();
+      osc.stop();
     });
   }
 }
 
 class Oscillator {
-  constructor(channel) {
+  constructor(channel, tempo, lowestNote) {
     this.osc = ctx.createOscillator();
     this.osc.connect(merger, 0, channel);
+    this.tempo = tempo;
+    this.lowestNote = lowestNote;
+    this.osc.start();
+    this.osc.frequency.setValueAtTime(randomFrequency(this.lowestNote), ctx.currentTime);
   }
 
   start() {
-    this.osc.frequency.setValueAtTime(randomFrequency(), ctx.currentTime);
-    this.osc.start();
+    gain.gain.setValueAtTime(1 / channels, ctx.currentTime);
     this.interval = setInterval(() => {
-      this.osc.frequency.setValueAtTime(randomFrequency(), ctx.currentTime);
-    }, Math.random() * 700 + 300);
+      this.osc.frequency.setValueAtTime(randomFrequency(this.lowestNote), ctx.currentTime);
+    }, this.tempo);
   }
 
   stop() {
-    this.osc.stop();
+    gain.gain.setValueAtTime(0, ctx.currentTime);
     clearInterval(this.interval);
   }
 }
 
-function randomFrequency() {
-  return Math.random() * 300 + 200;
+function randomFrequency(lowestNote) {
+  return Math.random() * 300 + lowestNote;
+}
+
+function initializeMusic() {
+  let music = null;
+  let toggleButton = document.getElementById("music-toggle");
+
+  toggleButton.onclick = () => {
+    if (!music) {
+      music = new Music(channels);
+    }
+    playing ? music.off() : music.on();
+    toggleButton.textContent = playing ? "Music On" : "Music Off";
+    playing = !playing;
+  };
 }

@@ -9,19 +9,9 @@ function startGame() {
     const description = JSON.parse(json);
     game = new Game([{ t: "blub", ...description }], canvas, introWrapper);
   } else {
+    game = new Game(levelCollection, canvas, introWrapper);
+  }
 
-        game = new Game(
-
-            levelCollection,
-            canvas,
-            introWrapper);
-    }
-
-    game.start();
+  game.start();
+  initializeMusic();
 }
-
-window.onclick = () => {
-  const music = new Music();
-  music.on();
-};
-
