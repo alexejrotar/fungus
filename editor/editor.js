@@ -1,7 +1,7 @@
 class Editor {
-    constructor(grid, canvas, outputContainer) {
+    constructor(grid, canvas, outputContainer, molecules = []) {
         this.canvas = canvas;
-        this.molecules = [];
+        this.molecules = molecules;
         this.selected = undefined;
         this.lastPosition = undefined;
         this.outputContainer = outputContainer;
@@ -13,6 +13,8 @@ class Editor {
         this.updateOutput();
 
         this.outputContainer.addEventListener("input", () => this.handleInput())
+        const shareButton = document.getElementById("share");
+        shareButton.addEventListener("click", () => this.share());
     }
 
     handleMousedown(position) {
@@ -57,6 +59,16 @@ class Editor {
         this.molecules = Molecule.from(m, grid);
     }
 
+    share() {
+        const output = {
+            g: this.grid.output(),
+            m: this.molecules.map(molecule => molecule.output()),
+        };
+        const json = JSON.stringify(output);
+        const b64 = window.btoa(json);
+        navigator.clipboard.writeText(b64);
+    }
+
     start() {
         window.setInterval(() => this.render(), 10);
     }
@@ -76,7 +88,14 @@ function startEditor() {
     const canvas = document.getElementById("canvas");
     const outputArea = document.getElementById("output");
     const grid = new Grid(15, new Vector(canvas.width / 2, canvas.height / 2), 15, "#666");
-    const editor = new Editor(grid, canvas, outputArea);
+    const b64 = new URLSearchParams(window.location.search).get("description");
+    let molecules = [];
+    if (b64) {
+        const json = window.atob(b64);
+        const { m } = JSON.parse(json);
+        molecules = Molecule.from(m, grid);
+    }
+    const editor = new Editor(grid, canvas, outputArea, molecules);
     editor.start();
 }
 
