@@ -11,6 +11,7 @@ function startGame() {
   } else {
 
         game = new Game(
+
             levelCollection,
             canvas,
             introWrapper);
