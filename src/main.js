@@ -24,5 +24,6 @@ function startGame() {
             canvas,
             introWrapper);
     }
+
     game.start();
 }

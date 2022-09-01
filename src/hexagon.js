@@ -21,9 +21,9 @@ class Hexagon {
                 this.radius * Math.cos(index * Math.PI / 3),
                 this.radius * Math.sin(index * Math.PI / 3)
             ))
-            .add(new Vector(
-                Math.random() * 2 - 1,
-                Math.random() * 2 - 1));
+            // .add(new Vector(
+            //     Math.random() * 2 - 1,
+            //     Math.random() * 2 - 1));
         return cartesian;
 
     }

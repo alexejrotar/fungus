@@ -20,7 +20,7 @@ class Game {
         this.introWrapper.classList.remove("closed");
 
         let grid = Grid.from(g);
-        const molecules = Molecule.from(m, grid);
+        const molecules = DraggableMolecule.from(m, grid);
 
         this.currentLevel = new Level(new ReactiveGrid(grid, this.canvas), molecules, this.nextLevel.bind(this));
     }
