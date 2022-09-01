@@ -13,4 +13,5 @@ function startGame() {
   }
 
   game.start();
+  initializeMusic();
 }
