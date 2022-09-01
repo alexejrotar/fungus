@@ -110,6 +110,10 @@ class DraggableMolecule {
     isAt(position) {
         return this.molecule.isAt(position);
     }
+
+    output() {
+        return this.molecule.output();
+    }
 }
 
 class Transform {
