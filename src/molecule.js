@@ -51,8 +51,8 @@ class Molecule {
     static from(description, grid) {
         return description.map(({ s, c }) => {
             const shape = s.map(pos => new Position(...pos));
-            const molecule = new Molecule(shape, grid, c);
-            return new DraggableMolecule(molecule);
+            return new Molecule(shape, grid, c);
+
         })
     }
 }
@@ -114,6 +114,9 @@ class DraggableMolecule {
     output() {
         return this.molecule.output();
     }
+    static from(description, grid) {
+        return Molecule.from(description, grid).map(molecule => new DraggableMolecule(molecule) )
+    }
 }
 
 class Transform {
@@ -144,7 +147,7 @@ class Transpose {
         const offset = cartesianTarget.subtract(cartesianSource);
         const cartesian = grid.getCartesian(position);
 
-        const steps = Array.from(Array(101), (_, i) => i / 100);
+        const steps = Array.from(Array(31), (_, i) => i / 30);
         return steps.map(step => cartesian.add(offset.scale(step)));
     }
 
@@ -164,7 +167,7 @@ class Rotation {
         const pivotCartesian = grid.getCartesian(this.pivot);
         const cartesian = grid.getCartesian(position).subtract(pivotCartesian);
 
-        const steps = Array.from(Array(101), (_, i) => i / 100);
+        const steps = Array.from(Array(31), (_, i) => i / 30);
         return steps.map(step => {
             const angle = step * this.rotation * PI / 3;
             const rotationMatrix = new Matrix([

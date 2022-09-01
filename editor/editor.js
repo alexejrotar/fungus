@@ -2,14 +2,17 @@ class Editor {
     constructor(grid, canvas, outputContainer, molecules = []) {
         this.canvas = canvas;
         this.molecules = molecules;
+        this.drawing = false;
         this.selected = undefined;
-        this.lastPosition = undefined;
+        this.deleteSingle = false;
         this.outputContainer = outputContainer;
         this.grid = grid;
         (new ReactiveGrid(this.grid, canvas))
             .withListener("mousedown", this.handleMousedown.bind(this))
             .withListener("mousemove", this.handleMousemove.bind(this))
-            .withListener("mouseup", this.handleMouseup.bind(this));
+            .withListener("mouseup", this.handleMouseup.bind(this))
+            .withListener("left", this.handleLeft.bind(this))
+            .withListener("right", this.handleRight.bind(this));
         this.updateOutput();
 
         this.outputContainer.addEventListener("input", () => this.handleInput())
@@ -21,25 +24,32 @@ class Editor {
         let molecule = this.molecules.find(molecule => molecule.isAt(position));
 
         if (molecule !== undefined) {
-            this.molecules = this.molecules.filter(other => other !== molecule);
-            this.updateOutput();
+            if (!this.deleteSingle) {
+                this.molecules = this.molecules.filter(other => other !== molecule);
+                this.updateOutput();
+            } else {
+                molecule.shape = molecule.shape.filter(other => !other.equals(position));
+            }
+
+        } else if (this.selected !== undefined) {
+            this.drawing = true;
         } else {
             molecule = new Molecule([position], this.grid, randomColor());
             this.molecules.push(molecule);
             this.selected = molecule;
-            this.lastPosition = position;
+            this.drawing = true;
         }
     }
 
     handleMousemove(position) {
-        if (this.selected === undefined) return;
+        if (!this.drawing) return;
         if (this.molecules.some(molecule => molecule.isAt(position))) return;
 
         this.selected.shape.push(position);
-        this.lastPosition = position;
     }
 
     handleMouseup() {
+        this.drawing = false;
         this.selected = undefined;
         this.updateOutput();
     }
@@ -54,11 +64,26 @@ class Editor {
 
     handleInput() {
         const { g, m } = JSON.parse(this.outputContainer.innerHTML);
-        
+
         let grid = Grid.from(g);
         this.molecules = Molecule.from(m, grid);
     }
 
+    handleLeft() {
+
+        if (this.selected == undefined) {
+            this.moleculeCounter = 1;
+        } else {
+            if (this.moleculeCounter < this.molecules.length) {
+                this.moleculeCounter++;
+            }
+
+        }
+        this.selected = this.molecules[this.molecules.length - this.moleculeCounter];
+    }
+    handleRight() {
+        this.deleteSingle = !this.deleteSingle;
+    }
     share() {
         const output = {
             g: this.grid.output(),
