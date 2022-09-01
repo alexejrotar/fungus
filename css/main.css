@@ -1,43 +1,58 @@
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 body {
-    background-color: #222;
-    font-family:'Courier New', Courier, monospace;
+  background-color: #222;
+  font-family: "Courier New", Courier, monospace;
 }
 
 main {
-    position: relative;
-    width: 100%;
-    height: 100%;
+  position: relative;
+  width: 1200px;
+  height: 100%;
+  margin: auto;
 }
 
 h1 {
-    color: white;
-    text-align: center;
+  color: white;
+  text-align: center;
+  margin-top: 0;
 }
 
 .game {
-    width: 1000px;
-    margin: auto;
+  width: 1000px;
+  margin: auto;
+}
+
+#music-toggle {
+  color: white;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: large;
+  margin: 1.5em auto auto 11em;
+}
+
+#music-toggle:hover {
+  color: lightgrey;
 }
 
 #intro {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 800px;
-    height: 600px;
-    transform: translate(-50%, -50%);
-    padding: 5em;
-    border: 1px solid white;
-    border-radius: 10px;
-    background-color: rgba(34, 34, 34, 0.9);
-    color: white;
-    font-size: large;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 800px;
+  height: 600px;
+  transform: translate(-50%, -50%);
+  padding: 5em;
+  border: 1px solid white;
+  border-radius: 10px;
+  background-color: rgba(34, 34, 34, 0.9);
+  color: white;
+  font-size: large;
 }
 
 #intro.closed {
-    display: none;
+  display: none;
 }
