@@ -73,7 +73,7 @@ class DraggableMolecule {
 
         const previous = this.molecule;
         this.molecule = this.molecule.transform(
-            new Transform(new Transpose(this.selected, position)),
+            new Transpose(this.selected, position),
             () => dissolve(this),
             isOccupied,
         );
@@ -115,7 +115,7 @@ class DraggableMolecule {
         return this.molecule.output();
     }
     static from(description, grid) {
-        return Molecule.from(description, grid).map(molecule => new DraggableMolecule(molecule) )
+        return Molecule.from(description, grid).map(molecule => new DraggableMolecule(molecule))
     }
 }
 
@@ -141,6 +141,28 @@ class Transpose {
         this.target = target;
     }
 
+    // TODO refactor this..
+    transform(position, grid, isOccupied, abort) {
+        if (!this.target.isNeighbor(this.source)) {
+            const trace = this.getTrace(position, grid);
+            const positions = Array.from(grid.traceToPositions(trace));
+
+            return positions.reduce((_, transformed) => {
+                if (isOccupied(transformed)) abort();
+                return transformed;
+            }, position)
+        }
+
+        const cartesianSource = grid.getCartesian(this.source);
+        const cartesianTarget = grid.getCartesian(this.target);
+        const offset = cartesianTarget.subtract(cartesianSource);
+        const cartesian = grid.getCartesian(position);
+        const transformed = cartesian.add(offset);
+        const transformedPosition = grid.getPosition(transformed)
+        if (isOccupied(transformedPosition)) abort();
+        return transformedPosition;
+    }
+
     getTrace(position, grid) {
         const cartesianSource = grid.getCartesian(this.source);
         const cartesianTarget = grid.getCartesian(this.target);
@@ -160,6 +182,15 @@ class Rotation {
     constructor(pivot, rotation) {
         this.pivot = pivot;
         this.rotation = rotation;
+    }
+    transform(position, grid, isOccupied, abort) {
+        const trace = this.getTrace(position, grid);
+        const positions = Array.from(grid.traceToPositions(trace));
+
+        return positions.reduce((_, transformed) => {
+            if (isOccupied(transformed)) abort();
+            return transformed;
+        }, position)
     }
 
     getTrace(position, grid) {

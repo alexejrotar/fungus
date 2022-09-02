@@ -190,6 +190,12 @@ class Position {
         }
     }
 
+    isNeighbor(other) {
+        const cartesian = this.toNormalizedCartesian();
+        const otherCartesian = other.toNormalizedCartesian();
+        return Math.abs(cartesian.distance(otherCartesian) - 2 * Math.sin(Math.PI / 3)) < 0.01;
+    }
+
 
     equals(other) {
         return this.coordinates.every((v, i) => v === other.coordinates[i]);
