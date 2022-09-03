@@ -18,6 +18,13 @@ class Editor {
         this.outputContainer.addEventListener("input", () => this.handleInput())
         const shareButton = document.getElementById("share");
         shareButton.addEventListener("click", () => this.share());
+
+        const colorInput = document.getElementById("color");
+        colorInput.addEventListener("change", () => {
+            if (this.selectedIndex < this.molecules.length) {
+                this.molecules[this.selectedIndex].color = colorInput.value;
+            }
+        })
     }
 
     handleMousedown(position) {
