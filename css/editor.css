@@ -8,8 +8,8 @@ h1 {
     text-align: center;
 }
 
-.editor {
-    width: 1000px;
+main {
+    width: 800px;
     margin: auto;
 }
 
@@ -25,4 +25,21 @@ h1 {
     background-color: #eee;
     color: black;
     font-size: large;
+}
+
+#share {
+    min-width: 10em;
+    margin: 1em 0;
+    padding: 0.5em;
+    border: none;
+    border-radius: 5px;
+}
+
+#share:hover {
+    cursor: pointer;
+    background-color: #ddd;
+}
+
+#share:active {
+    background-color: #fff;
 }
