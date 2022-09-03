@@ -3,8 +3,8 @@ class Editor {
         this.canvas = canvas;
         this.molecules = molecules;
         this.drawing = false;
-        this.selected = undefined;
-        this.deleteSingle = false;
+        this.selectedIndex = 0;
+
         this.outputContainer = outputContainer;
         this.grid = grid;
         (new ReactiveGrid(this.grid, canvas))
@@ -24,19 +24,21 @@ class Editor {
         let molecule = this.molecules.find(molecule => molecule.isAt(position));
 
         if (molecule !== undefined) {
-            if (!this.deleteSingle) {
-                this.molecules = this.molecules.filter(other => other !== molecule);
+            if (this.selectedIndex < this.molecules.length && this.molecules[this.selectedIndex] === molecule) {
+                molecule.shape = molecule.shape.filter(other => !other.equals(position));
                 this.updateOutput();
             } else {
-                molecule.shape = molecule.shape.filter(other => !other.equals(position));
+                this.molecules = this.molecules.filter(other => other !== molecule);
+                this.selectedIndex = this.molecules.length;
+                this.updateOutput();
             }
 
-        } else if (this.selected !== undefined) {
+        } else if (this.selectedIndex < this.molecules.length) {
             this.drawing = true;
         } else {
-            molecule = new Molecule([position], this.grid, randomColor());
+            molecule = new HighlightedMolecule([position], this.grid, randomColor());
             this.molecules.push(molecule);
-            this.selected = molecule;
+            this.selectedIndex = this.molecules.length - 1;
             this.drawing = true;
         }
     }
@@ -44,13 +46,11 @@ class Editor {
     handleMousemove(position) {
         if (!this.drawing) return;
         if (this.molecules.some(molecule => molecule.isAt(position))) return;
-
-        this.selected.shape.push(position);
+        this.molecules[this.selectedIndex].shape.push(position);
     }
 
     handleMouseup() {
         this.drawing = false;
-        this.selected = undefined;
         this.updateOutput();
     }
 
@@ -68,25 +68,29 @@ class Editor {
     
             let grid = Grid.from(g);
             this.molecules = Molecule.from(m, grid);
+            this.selectedIndex = this.molecules.length;
         } catch (e) {
             console.warn(e);
         }
     }
 
     handleLeft() {
-
-        if (this.selected == undefined) {
-            this.moleculeCounter = 1;
-        } else {
-            if (this.moleculeCounter < this.molecules.length) {
-                this.moleculeCounter++;
-            }
-
+        if (this.selectedIndex < this.molecules.length) {
+            this.molecules[this.selectedIndex] = this.molecules[this.selectedIndex].unhighlighted()
         }
-        this.selected = this.molecules[this.molecules.length - this.moleculeCounter];
+        this.selectedIndex = Math.max(0, this.selectedIndex - 1);
+        if (this.selectedIndex < this.molecules.length) {
+            this.molecules[this.selectedIndex] = this.molecules[this.selectedIndex].highlighted();
+        }
     }
     handleRight() {
-        this.deleteSingle = !this.deleteSingle;
+        if (this.selectedIndex < this.molecules.length) {
+            this.molecules[this.selectedIndex] = this.molecules[this.selectedIndex].unhighlighted()
+        }
+        this.selectedIndex = Math.min(this.molecules.length, this.selectedIndex + 1);
+        if (this.selectedIndex < this.molecules.length) {
+            this.molecules[this.selectedIndex] = this.molecules[this.selectedIndex].highlighted();
+        }
     }
     share() {
         const output = {

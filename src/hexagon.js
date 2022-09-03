@@ -16,7 +16,7 @@ class Hexagon {
 
 
     getCartesian(index) {
-        const hash = (value) => value**3 % 2 - 4;
+        const hash = (value) => value ** 3 % 2 - 4;
         const time = Math.floor((new Date()).getTime() % 1000 / 200);
         const cartesian = this.cartesian
             .add(new Vector(
@@ -32,10 +32,10 @@ class Hexagon {
 }
 
 class RenderedHexagon {
-    constructor(hexagon, color = "#000", fill = false) {
+    constructor(hexagon, color = "#000", alpha = 0) {
         this.hexagon = hexagon;
         this.color = color;
-        this.fill = fill;
+        this.alpha = alpha;
     }
 
     render(ctx) {
@@ -50,11 +50,9 @@ class RenderedHexagon {
         }
         ctx.stroke();
 
-        if (this.fill) {
-            ctx.fillStyle = this.color;
-            ctx.globalAlpha = 0.2;
-            ctx.fill();
-        }
+        ctx.fillStyle = this.color;
+        ctx.globalAlpha = this.alpha;
+        ctx.fill();
 
         ctx.restore();
     }

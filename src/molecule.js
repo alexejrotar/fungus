@@ -34,18 +34,25 @@ class Molecule {
         ctx.lineWidth = 3;
         this.shape.forEach(position => {
             let hexagon = this.grid.getHexagon(position);
-            (new RenderedHexagon(hexagon, this.color, true)).render(ctx);
+            (new RenderedHexagon(hexagon, this.color, 0.2)).render(ctx);
         })
         ctx.restore();
     }
 
     copy() {
-        const molecule = new Molecule(this.shape.map(position => position.copy()), this.grid, this.color);
-        return molecule;
+        return new Molecule(this.shape.map(position => position.copy()), this.grid, this.color);
     }
 
     output() {
         return { c: this.color, s: this.shape.map(position => position.output()) };
+    }
+
+    highlighted() {
+        return new HighlightedMolecule(this.shape, this.grid, this.color);
+    }
+
+    unhighlighted() {
+        return this.copy();
     }
 
     static from(description, grid) {
@@ -54,6 +61,22 @@ class Molecule {
             return new Molecule(shape, grid, c);
 
         })
+    }
+}
+
+class HighlightedMolecule extends Molecule {
+    constructor(shape, grid, color = "#000") {
+        super(shape, grid, color);
+    }
+
+    render(ctx) {
+        ctx.save();
+        ctx.lineWidth = 3;
+        this.shape.forEach(position => {
+            let hexagon = this.grid.getHexagon(position);
+            (new RenderedHexagon(hexagon, this.color, 0.5)).render(ctx);
+        })
+        ctx.restore();
     }
 }
 
