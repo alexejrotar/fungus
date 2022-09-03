@@ -10,11 +10,11 @@ class Molecule {
     }
 
     // TODO eventually remove the defaults
-    transform(transformation, dissolve = () => { }, isOccupied = (_) => false) {
+    transform(transformation, dissolve = () => { }, isOccupied = (_) => false, hintAt) {
         let aborted = false;
         const movedMolecule = this.copy();
         for (let i = 0; i < movedMolecule.shape.length; i++) {
-            movedMolecule.shape[i] = transformation.transform(this.shape[i], this.grid, isOccupied, () => aborted = true);
+            movedMolecule.shape[i] = transformation.transform(this.shape[i], this.grid, isOccupied, () => aborted = true, hintAt);
         }
 
         if (aborted) return this;
@@ -91,7 +91,7 @@ class DraggableMolecule {
         this.selected = this.molecule.isAt(position) ? position : undefined;
     }
 
-    mousemoved(position, dissolve, isOccupied) {
+    mousemoved(position, dissolve, isOccupied, hintAt) {
         if (!this.selected) return;
 
         const previous = this.molecule;
@@ -99,6 +99,7 @@ class DraggableMolecule {
             new Transpose(this.selected, position),
             () => dissolve(this),
             isOccupied,
+            hintAt,
         );
 
         if (previous !== this.molecule) {
@@ -110,16 +111,16 @@ class DraggableMolecule {
         this.selected = undefined;
     }
 
-    left(dissolve, isOccupied) {
-        this.rotate(dissolve, isOccupied, new Rotation(this.selected, 1));
+    left(dissolve, isOccupied, hintAt) {
+        this.rotate(dissolve, isOccupied, new Rotation(this.selected, 1), hintAt);
     }
-    right(dissolve, isOccupied) {
-        this.rotate(dissolve, isOccupied, new Rotation(this.selected, -1));
+    right(dissolve, isOccupied, hintAt) {
+        this.rotate(dissolve, isOccupied, new Rotation(this.selected, -1), hintAt);
     }
 
-    rotate(dissolve, isOccupied, rotation) {
+    rotate(dissolve, isOccupied, rotation, hintAt) {
         if (!this.selected) return;
-        this.molecule = this.molecule.transform(new Transform(rotation), () => dissolve(this), isOccupied);
+        this.molecule = this.molecule.transform(rotation, () => dissolve(this), isOccupied, hintAt);
     }
 
     render(ctx) {
@@ -142,22 +143,6 @@ class DraggableMolecule {
     }
 }
 
-class Transform {
-    constructor(transformation) {
-        this.transformation = transformation;
-    }
-
-    transform(position, grid, isOccupied, abort) {
-        const trace = this.transformation.getTrace(position, grid);
-        const positions = Array.from(grid.traceToPositions(trace));
-
-        return positions.reduce((_, transformed) => {
-            if (isOccupied(transformed)) abort();
-            return transformed;
-        }, position)
-    }
-}
-
 class Transpose {
     constructor(source, target) {
         this.source = source;
@@ -165,25 +150,34 @@ class Transpose {
     }
 
     // TODO refactor this..
-    transform(position, grid, isOccupied, abort) {
+    transform(position, grid, isOccupied, abort, hintAt) {
         if (!this.target.isNeighbor(this.source)) {
             const trace = this.getTrace(position, grid);
             const positions = Array.from(grid.traceToPositions(trace));
 
-            return positions.reduce((_, transformed) => {
-                if (isOccupied(transformed)) abort();
-                return transformed;
-            }, position)
+            for (const transformed of positions) {
+                if (isOccupied(transformed)) {
+                    hintAt(transformed);
+                    hintAt(position);
+                    abort();
+                    return position;
+                }
+            }
+            return positions[positions.length - 1];
         }
 
         const cartesianSource = grid.getCartesian(this.source);
         const cartesianTarget = grid.getCartesian(this.target);
         const offset = cartesianTarget.subtract(cartesianSource);
         const cartesian = grid.getCartesian(position);
-        const transformed = cartesian.add(offset);
-        const transformedPosition = grid.getPosition(transformed)
-        if (isOccupied(transformedPosition)) abort();
-        return transformedPosition;
+        const transformedCartesian = cartesian.add(offset);
+        const transformed = grid.getPosition(transformedCartesian)
+        if (isOccupied(transformed)) {
+            hintAt(transformed)
+            hintAt(position);
+            abort();
+        }
+        return transformed;
     }
 
     getTrace(position, grid) {
@@ -206,14 +200,19 @@ class Rotation {
         this.pivot = pivot;
         this.rotation = rotation;
     }
-    transform(position, grid, isOccupied, abort) {
+    transform(position, grid, isOccupied, abort, hintAt) {
         const trace = this.getTrace(position, grid);
         const positions = Array.from(grid.traceToPositions(trace));
 
-        return positions.reduce((_, transformed) => {
-            if (isOccupied(transformed)) abort();
-            return transformed;
-        }, position)
+        for (const transformed of positions) {
+            if (isOccupied(transformed)) {
+                hintAt(transformed);
+                hintAt(position);
+                abort();
+                return position;
+            }
+        }
+        return positions[positions.length - 1];
     }
 
     getTrace(position, grid) {

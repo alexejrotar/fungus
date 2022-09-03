@@ -107,6 +107,10 @@ class ReactiveGrid {
     output() {
         return this.grid.output();
     }
+
+    getHexagon(position) {
+        return this.grid.getHexagon(position);
+    }
 }
 
 // TODO more consistent use of vector

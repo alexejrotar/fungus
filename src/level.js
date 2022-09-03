@@ -1,6 +1,7 @@
 class Level {
     constructor(grid, molecules = [], completed = () => {}) {
         this.molecules = molecules;
+        this.hints = [];
         this.color = "#222";
         this.completed = completed;
         this.grid = grid
@@ -20,6 +21,14 @@ class Level {
         if (this.molecules.length === 0) this.completed();
     }
 
+    hintAt(position) {
+        this.hints.push(new Hint(position, this.expireHint.bind(this), this.grid.getHexagon.bind(this.grid)));
+    }
+
+    expireHint(hint) {
+        this.hints = this.hints.filter(other => hint !== other);
+    }
+
     render(ctx) {
         ctx.save();
         ctx.fillStyle = this.color;
@@ -28,6 +37,7 @@ class Level {
 
         this.grid.render(ctx);
         this.molecules.forEach(molecule => molecule.render(ctx));
+        this.hints.forEach(hint => hint.render(ctx));
     }
 
     handleMousedown(position) {
@@ -38,7 +48,9 @@ class Level {
         this.molecules.forEach(molecule => molecule.mousemoved(
             position,
             this.dissovle.bind(this),
-            this.isOccupied.bind(this, this.molecules.filter(other => other !== molecule))));
+            this.isOccupied.bind(this, this.molecules.filter(other => other !== molecule)),
+            this.hintAt.bind(this),
+        ));
     }
 
     handleMouseup(_) {
@@ -48,12 +60,16 @@ class Level {
     handleLeft() {
         this.molecules.forEach(molecule => molecule.left(
             this.dissovle.bind(this),
-            this.isOccupied.bind(this, this.molecules.filter(other => other !== molecule))));
+            this.isOccupied.bind(this, this.molecules.filter(other => other !== molecule)),
+            this.hintAt.bind(this),
+        ));
     }
 
     handleRight() {
         this.molecules.forEach(molecule => molecule.right(
             this.dissovle.bind(this),
-            this.isOccupied.bind(this, this.molecules.filter(other => other !== molecule))));
+            this.isOccupied.bind(this, this.molecules.filter(other => other !== molecule)),
+            this.hintAt.bind(this),
+        ));
     }
 }
