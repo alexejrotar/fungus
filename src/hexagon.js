@@ -16,14 +16,16 @@ class Hexagon {
 
 
     getCartesian(index) {
+        const hash = (value) => value**3 % 2 - 4;
+        const time = Math.floor((new Date()).getTime() % 1000 / 200);
         const cartesian = this.cartesian
             .add(new Vector(
                 this.radius * Math.cos(index * Math.PI / 3),
                 this.radius * Math.sin(index * Math.PI / 3)
             ))
-            // .add(new Vector(
-            //     Math.random() * 2 - 1,
-            //     Math.random() * 2 - 1));
+            .add(new Vector(
+                hash(this.cartesian.v[0] + index + time),
+                hash(this.cartesian.v[1] + index + time)));
         return cartesian;
 
     }

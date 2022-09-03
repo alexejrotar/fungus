@@ -63,11 +63,14 @@ class Editor {
     }
 
     handleInput() {
-        this.outputContainer.innerHTML = this.outputContainer.innerHTML.replaceAll(/[\s\t\n]/g, "");
-        const { g, m } = JSON.parse(this.outputContainer.innerHTML);
-
-        let grid = Grid.from(g);
-        this.molecules = Molecule.from(m, grid);
+        try {
+            const { g, m } = JSON.parse(this.outputContainer.innerHTML);
+    
+            let grid = Grid.from(g);
+            this.molecules = Molecule.from(m, grid);
+        } catch (e) {
+            console.warn(e);
+        }
     }
 
     handleLeft() {
