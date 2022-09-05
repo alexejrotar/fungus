@@ -4,10 +4,11 @@ class Grid {
         this.center = center;
         this.size = size;
         this.color = color;
+        this.circle = Array.from(Position.circle(this.size));
     }
 
     render(ctx) {
-        for (const position of Position.circle(this.size)) {
+        for (const position of this.circle) {
             (new RenderedHexagon(this.getHexagon(position), this.color)).render(ctx);
         }
     }
@@ -37,9 +38,8 @@ class Grid {
         }
     }
 
-    // TODO
     isInside(position) {
-        return position.every(coordinate => coordinate < this.size);
+        return position.isInside(this.size);
     }
 
     output() {
@@ -115,18 +115,17 @@ class ReactiveGrid {
 
 // TODO more consistent use of vector
 class Position {
-    constructor(u, v, w) {
-        const cartesian = new Matrix(Position.axes()).transpose().multiply(new Vector(u, v, w));
+    constructor(u, v) {
+        const cartesian = new Matrix(Position.base).transpose().multiply(new Vector(u, v));
 
-        const { baseIndex, vector } = Position.solveFor(cartesian);
-        vector.splice(baseIndex, 0, 0);
+        const vector = Position.solveFor(cartesian);
         this.coordinates = vector.map(x => Math.round(x));
     }
 
     static fromNormalizedCartesian(cartesian) {
         const { ceil, floor } = Math;
 
-        const { baseIndex, vector } = Position.solveFor(cartesian);
+        const vector = Position.solveFor(cartesian);
         let candidates = [
             [floor(vector[0]), floor(vector[1])],
             [floor(vector[0]), ceil(vector[1])],
@@ -134,7 +133,6 @@ class Position {
             [ceil(vector[0]), floor(vector[1])],
         ];
 
-        candidates.forEach(v => v.splice(baseIndex, 0, 0));
 
         let minDistance = Infinity;
         let position;
@@ -153,29 +151,22 @@ class Position {
     }
 
     static solveFor(cartesian) {
-        for (let i = 0; i < 3; i++) {
-            const base = Position.axes().filter((_, j) => i !== j);
-            const matrix = new Matrix(base).transpose().invert();
-            const vector = matrix.multiply(cartesian);
-            if (vector.v.every(x => x >= 0)) return { baseIndex: i, vector: vector.v };
-        }
+        const matrix = new Matrix(Position.base).transpose().invert();
+        const vector = matrix.multiply(cartesian);
+        return vector.v;
     }
 
-    static axes() {
-        const { PI, sin, cos } = Math;
-        return [
-            [1 + cos(PI / 3), sin(PI / 3)],
-            [- (1 + cos(PI / 3)), sin(PI / 3)],
-            [0, - 2 * sin(PI / 3)],
-        ];
-    }
+    static base = [
+        [1 + Math.cos(Math.PI / 3), Math.sin(Math.PI / 3)],
+        [- (1 + Math.cos(Math.PI / 3)), Math.sin(Math.PI / 3)],
+    ]
 
     toNormalizedCartesian() {
         const { sin, cos, PI } = Math;
 
         const matrix = new Matrix([
-            [1 + cos(PI / 3), - 1 - cos(PI / 3), 0],
-            [sin(PI / 3), sin(PI / 3), - 2 * sin(PI / 3)]
+            [1 + cos(PI / 3), - 1 - cos(PI / 3)],
+            [sin(PI / 3), sin(PI / 3)]
         ]);
 
         return matrix.multiply(new Vector(...this.coordinates));
@@ -185,9 +176,8 @@ class Position {
         for (let u = 0; u < radius; u++) {
             for (let v = 0; v < radius; v++) {
                 for (let w = 0; w < radius; w++) {
-                    const position = new Position(u, v, w);
                     if ([u, v, w].some(z => z === 0)) {
-                        yield position;
+                        yield new Position(u - w, v - w);
                     }
                 }
             }
@@ -198,6 +188,14 @@ class Position {
         const cartesian = this.toNormalizedCartesian();
         const otherCartesian = other.toNormalizedCartesian();
         return Math.abs(cartesian.distance(otherCartesian) - 2 * Math.sin(Math.PI / 3)) < 0.01;
+    }
+
+    isInside(radius) {
+        if (Math.sign(this.coordinates[0]) === Math.sign(this.coordinates[1])) {
+            return this.coordinates.every(u => Math.abs(u) < radius);
+        } else {
+            return Math.abs(this.coordinates[0]) + Math.abs(this.coordinates[1]) < radius; 
+        }
     }
 
 

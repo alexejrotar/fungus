@@ -4,7 +4,6 @@ class Game {
         this.levelDescriptions = levelDescriptions;
         this.introWrapper = introWrapper;
         this.currentLevel = undefined;
-        this.introText = "";
     }
 
     start() {
@@ -15,9 +14,13 @@ class Game {
 
     nextLevel() {
         if (this.levelDescriptions.length === 0) return;
-        const { g, m, t } = this.levelDescriptions.shift();
-        this.introWrapper.innerHTML = t;
-        this.introWrapper.classList.remove("closed");
+        const desc = this.levelDescriptions.shift();
+        const { g, m } = desc;
+        if (desc.t !== undefined) {
+            this.introWrapper.innerHTML = desc.t;
+            this.introWrapper.classList.remove("closed");
+            console.log(desc.t);
+        }
 
         let grid = Grid.from(g);
         const molecules = DraggableMolecule.from(m, grid);

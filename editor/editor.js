@@ -65,14 +65,14 @@ class Editor {
     updateOutput() {
         const output = {
             g: this.grid.output(),
-            m: this.molecules.map(molecule => molecule.output()),
+            m: this.molecules.filter(molecule => molecule.shape.length > 0).map(molecule => molecule.output()),
         };
         this.outputContainer.innerHTML = JSON.stringify(output);
     }
 
     handleInput() {
         try {
-            const { g, m } = JSON.parse(this.outputContainer.innerHTML);
+            const { g, m } = JSON.parse(this.outputContainer.innerHTML.replaceAll(/\s/g, ""));
 
             let grid = Grid.from(g);
             this.molecules = Molecule.from(m, grid);
