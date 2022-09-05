@@ -34,7 +34,7 @@ class Molecule {
         ctx.lineWidth = 3;
         this.shape.forEach(position => {
             let hexagon = this.grid.getHexagon(position);
-            (new RenderedHexagon(hexagon, this.color, 0.2)).render(ctx);
+            (new RenderedHexagon(hexagon, this.color, 0.4)).render(ctx);
         })
         ctx.restore();
     }
@@ -74,7 +74,7 @@ class HighlightedMolecule extends Molecule {
         ctx.lineWidth = 3;
         this.shape.forEach(position => {
             let hexagon = this.grid.getHexagon(position);
-            (new RenderedHexagon(hexagon, this.color, 0.5)).render(ctx);
+            (new RenderedHexagon(hexagon, this.color, 0.7)).render(ctx);
         })
         ctx.restore();
     }
@@ -151,6 +151,9 @@ class Transpose {
 
     // TODO refactor this..
     transform(position, grid, isOccupied, abort, hintAt) {
+        if (this.source.equals(this.target)) {
+            return position;
+        }
         if (!this.target.isNeighbor(this.source)) {
             const trace = this.getTrace(position, grid);
             const positions = Array.from(grid.traceToPositions(trace));
@@ -163,6 +166,7 @@ class Transpose {
                     return position;
                 }
             }
+            if (positions.length === 0) return position;
             return positions[positions.length - 1];
         }
 

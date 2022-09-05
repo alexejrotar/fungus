@@ -42,6 +42,7 @@ class Editor {
 
         } else if (this.selectedIndex < this.molecules.length) {
             this.drawing = true;
+            this.molecules[this.selectedIndex].shape.push(position);
         } else {
             molecule = new HighlightedMolecule([position], this.grid, randomColor());
             this.molecules.push(molecule);
@@ -72,7 +73,7 @@ class Editor {
     handleInput() {
         try {
             const { g, m } = JSON.parse(this.outputContainer.innerHTML);
-    
+
             let grid = Grid.from(g);
             this.molecules = Molecule.from(m, grid);
             this.selectedIndex = this.molecules.length;
@@ -144,5 +145,5 @@ function randomColor() {
     const red = random(100, 256);
     const green = random(100, 256);
     const blue = random(100, 256);
-    return `rgb(${red}, ${green}, ${blue})`;
+    return `#${red.toString(16)}${green.toString(16)}${blue.toString(16)}`;
 }

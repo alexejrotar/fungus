@@ -9,13 +9,17 @@ h1 {
 }
 
 main {
-    width: 800px;
+    width: 1000px;
     margin: auto;
 }
 
 .output-area {
-    max-width: 800px;
     margin: 2em auto; 
+}
+
+.controls {
+    width: 800px;
+    margin: auto;
 }
 
 #output {
