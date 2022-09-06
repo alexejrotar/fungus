@@ -7,7 +7,7 @@ function startGame() {
   if (b64) {
     const json = window.atob(b64);
     const description = JSON.parse(json);
-    game = new Game([{ t: "blub", ...description }], canvas, introWrapper);
+    game = new Game([description], canvas, introWrapper);
   } else {
     game = new Game(levelCollection, canvas, introWrapper);
   }

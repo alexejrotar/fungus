@@ -2,30 +2,39 @@ class Hexagon {
     constructor(radius, cartesian) {
         this.cartesian = cartesian;
         this.radius = radius;
+        this.sides = [];
     }
 
     getSides() {
-        const sides = [];
-        for (let i = 0; i < 6; i++) {
-            const source = this.getCartesian(i);
-            const target = this.getCartesian(i + 1);
-            sides.push([source, target]);
+        const hash = (value) => value ** 3 % 2 - 4;
+        const time = Math.floor((new Date()).getTime() % 1000 / 200);
+        if (this.sides.length === 0) {
+            for (let i = 0; i < 6; i++) {
+                const source = this.getCartesian(i);
+                const target = this.getCartesian(i + 1);
+                this.sides.push([source, target]);
+            }
         }
-        return sides;
+        return this.sides.map((side, i) => [
+            side[0].add(new Vector(
+                hash(side[0].v[0] + i + time),
+                hash(side[0].v[1] + i + time),
+            )),
+            side[1].add(new Vector(
+                hash(side[1].v[0] + i + time),
+                hash(side[1].v[1] + i + time),
+            )),
+
+        ]);
     }
 
 
     getCartesian(index) {
-        const hash = (value) => value ** 3 % 2 - 4;
-        const time = Math.floor((new Date()).getTime() % 1000 / 200);
         const cartesian = this.cartesian
             .add(new Vector(
                 this.radius * Math.cos(index * Math.PI / 3),
                 this.radius * Math.sin(index * Math.PI / 3)
             ))
-            .add(new Vector(
-                hash(this.cartesian.v[0] + index + time),
-                hash(this.cartesian.v[1] + index + time)));
         return cartesian;
 
     }

@@ -149,39 +149,23 @@ class Transpose {
         this.target = target;
     }
 
-    // TODO refactor this..
     transform(position, grid, isOccupied, abort, hintAt) {
         if (this.source.equals(this.target)) {
             return position;
         }
-        if (!this.target.isNeighbor(this.source)) {
-            const trace = this.getTrace(position, grid);
-            const positions = Array.from(grid.traceToPositions(trace));
+        const trace = this.getTrace(position, grid);
+        const positions = Array.from(grid.traceToPositions(trace));
 
-            for (const transformed of positions) {
-                if (isOccupied(transformed)) {
-                    hintAt(transformed);
-                    hintAt(position);
-                    abort();
-                    return position;
-                }
+        for (const transformed of positions) {
+            if (isOccupied(transformed)) {
+                hintAt(transformed);
+                hintAt(position);
+                abort();
+                return position;
             }
-            if (positions.length === 0) return position;
-            return positions[positions.length - 1];
         }
-
-        const cartesianSource = grid.getCartesian(this.source);
-        const cartesianTarget = grid.getCartesian(this.target);
-        const offset = cartesianTarget.subtract(cartesianSource);
-        const cartesian = grid.getCartesian(position);
-        const transformedCartesian = cartesian.add(offset);
-        const transformed = grid.getPosition(transformedCartesian)
-        if (isOccupied(transformed)) {
-            hintAt(transformed)
-            hintAt(position);
-            abort();
-        }
-        return transformed;
+        if (positions.length === 0) return position;
+        return positions[positions.length - 1];
     }
 
     getTrace(position, grid) {
@@ -190,7 +174,11 @@ class Transpose {
         const offset = cartesianTarget.subtract(cartesianSource);
         const cartesian = grid.getCartesian(position);
 
-        const steps = Array.from(Array(31), (_, i) => i / 30);
+        const maxDistance = Math.floor(cartesianSource.distance(cartesianTarget) / (2 * Math.cos(Math.PI / 3) * grid.radius));
+        if (maxDistance === 0) {
+            return [cartesian.add(offset)];
+        }
+        const steps = Array.from(Array(maxDistance + 1), (_, i) => i / maxDistance);
         return steps.map(step => cartesian.add(offset.scale(step)));
     }
 

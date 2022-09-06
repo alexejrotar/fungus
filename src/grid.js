@@ -4,12 +4,12 @@ class Grid {
         this.center = center;
         this.size = size;
         this.color = color;
-        this.circle = Array.from(Position.circle(this.size));
+        this.circle = Array.from(Position.circle(this.size)).map(position => this.getHexagon(position));
     }
 
     render(ctx) {
-        for (const position of this.circle) {
-            (new RenderedHexagon(this.getHexagon(position), this.color)).render(ctx);
+        for (const hexagon of this.circle) {
+            (new RenderedHexagon(hexagon, this.color)).render(ctx);
         }
     }
 
@@ -116,16 +116,35 @@ class ReactiveGrid {
 // TODO more consistent use of vector
 class Position {
     constructor(u, v) {
-        const cartesian = new Matrix(Position.base).transpose().multiply(new Vector(u, v));
-
-        const vector = Position.solveFor(cartesian);
-        this.coordinates = vector.map(x => Math.round(x));
+        this.coordinates = [u, v];
     }
 
     static fromNormalizedCartesian(cartesian) {
         const { ceil, floor } = Math;
 
-        const vector = Position.solveFor(cartesian);
+        const solveFor = (vector) => {
+            const matrix = new Matrix(Position.base).invert();
+            return matrix.multiply(vector);
+        }
+
+        const roundToCenter = (candidates) => {
+            let minDistance = Infinity;
+            let position;
+            for (const candidate of candidates) {
+
+                const candidatePosition = new Position(...candidate);
+                const candidateCartesian = candidatePosition.toNormalizedCartesian();
+                const distance = cartesian.distance(candidateCartesian);
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    position = candidatePosition;
+                }
+            }
+            return position;
+        }
+
+        const vector = solveFor(cartesian).v;
         let candidates = [
             [floor(vector[0]), floor(vector[1])],
             [floor(vector[0]), ceil(vector[1])],
@@ -133,42 +152,16 @@ class Position {
             [ceil(vector[0]), floor(vector[1])],
         ];
 
-
-        let minDistance = Infinity;
-        let position;
-        for (const candidate of candidates) {
-
-            const candidatePosition = new Position(...candidate);
-            const candidateCartesian = candidatePosition.toNormalizedCartesian();
-            const distance = cartesian.distance(candidateCartesian);
-
-            if (distance < minDistance) {
-                minDistance = distance;
-                position = candidatePosition;
-            }
-        }
-        return position;
-    }
-
-    static solveFor(cartesian) {
-        const matrix = new Matrix(Position.base).transpose().invert();
-        const vector = matrix.multiply(cartesian);
-        return vector.v;
+        return roundToCenter(candidates);
     }
 
     static base = [
-        [1 + Math.cos(Math.PI / 3), Math.sin(Math.PI / 3)],
-        [- (1 + Math.cos(Math.PI / 3)), Math.sin(Math.PI / 3)],
+        [1 + Math.cos(Math.PI / 3), - (1 + Math.cos(Math.PI / 3))],
+        [Math.sin(Math.PI / 3), Math.sin(Math.PI / 3)],
     ]
 
     toNormalizedCartesian() {
-        const { sin, cos, PI } = Math;
-
-        const matrix = new Matrix([
-            [1 + cos(PI / 3), - 1 - cos(PI / 3)],
-            [sin(PI / 3), sin(PI / 3)]
-        ]);
-
+        const matrix = new Matrix(Position.base);
         return matrix.multiply(new Vector(...this.coordinates));
     }
 
@@ -194,7 +187,7 @@ class Position {
         if (Math.sign(this.coordinates[0]) === Math.sign(this.coordinates[1])) {
             return this.coordinates.every(u => Math.abs(u) < radius);
         } else {
-            return Math.abs(this.coordinates[0]) + Math.abs(this.coordinates[1]) < radius; 
+            return Math.abs(this.coordinates[0]) + Math.abs(this.coordinates[1]) < radius;
         }
     }
 
