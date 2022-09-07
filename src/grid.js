@@ -23,18 +23,23 @@ class Grid {
         return cartesian.add(this.center);
     }
 
-    getPosition(cartesian) {
+    getPositions(cartesian) {
         const normalizedCartesian = cartesian.subtract(this.center).scale(1 / this.radius);
         return Position.fromNormalizedCartesian(normalizedCartesian);
     }
 
+    getPosition(cartesian) {
+        return this.getPositions(cartesian)[0];
+    }
+
     *traceToPositions(trace) {
-        let currentPosition = new Position(0, 0, 0);
+        const seenPositions = [];
         for (const cartesian of trace) {
-            const position = this.getPosition(cartesian);
-            if (currentPosition.equals(position)) continue;
-            currentPosition = position;
-            yield position;
+            const positions = this.getPositions(cartesian).filter(position => seenPositions.find(other => position.equals(other)) === undefined);
+            for (const position of positions) {
+                seenPositions.push(position);
+                yield position;
+            }
         }
     }
 
@@ -56,7 +61,7 @@ class ReactiveGrid {
     constructor(grid, canvas) {
         this.grid = grid;
         this.canvas = canvas;
-        this.mouseCoordinates = new Position(-1, -1, -1);
+        this.mouseCoordinates = new Position(-1, -1);
         this.listeners = {
             mousedown: [],
             mousemove: [],
@@ -129,19 +134,20 @@ class Position {
 
         const roundToCenter = (candidates) => {
             let minDistance = Infinity;
-            let position;
-            for (const candidate of candidates) {
-
-                const candidatePosition = new Position(...candidate);
-                const candidateCartesian = candidatePosition.toNormalizedCartesian();
+            const distances = candidates.map(candidate => {
+                const candidateCartesian = candidate.toNormalizedCartesian();
                 const distance = cartesian.distance(candidateCartesian);
 
                 if (distance < minDistance) {
                     minDistance = distance;
-                    position = candidatePosition;
                 }
-            }
-            return position;
+                return distance;
+            })
+            const positions = candidates
+                .filter((_, i) => Math.abs(minDistance - distances[i]) < 0.01)
+                .filter((position, i, self) => self.findIndex(other => other.equals(position)) === i);
+            return positions;
+
         }
 
         const vector = solveFor(cartesian).v;
@@ -150,7 +156,7 @@ class Position {
             [floor(vector[0]), ceil(vector[1])],
             [ceil(vector[0]), ceil(vector[1])],
             [ceil(vector[0]), floor(vector[1])],
-        ];
+        ].map(candidate => new Position(...candidate));
 
         return roundToCenter(candidates);
     }
