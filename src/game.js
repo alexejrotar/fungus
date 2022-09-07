@@ -9,7 +9,7 @@ class Game {
     start() {
         this.nextLevel();
         this.introWrapper.addEventListener("click", () => this.closeIntro());
-        window.setInterval(() => this.render(), 10)
+        window.setInterval(() => this.render(), 20)
     }
 
     nextLevel() {

@@ -6,8 +6,6 @@ class Hexagon {
     }
 
     getSides() {
-        const hash = (value) => value ** 3 % 2 - 4;
-        const time = Math.floor((new Date()).getTime() % 1000 / 200);
         if (this.sides.length === 0) {
             for (let i = 0; i < 6; i++) {
                 const source = this.getCartesian(i);
@@ -15,17 +13,7 @@ class Hexagon {
                 this.sides.push([source, target]);
             }
         }
-        return this.sides.map((side, i) => [
-            side[0].add(new Vector(
-                hash(side[0].v[0] + i + time),
-                hash(side[0].v[1] + i + time),
-            )),
-            side[1].add(new Vector(
-                hash(side[1].v[0] + i + time),
-                hash(side[1].v[1] + i + time),
-            )),
-
-        ]);
+        return this.sides;
     }
 
 
