@@ -28,8 +28,8 @@ class Grid {
         return Position.fromNormalizedCartesian(normalizedCartesian);
     }
 
-    getPosition(cartesian) {
-        return this.getPositions(cartesian)[0];
+    maxPositionsBetween(source, target) {
+        return Math.floor(source.distance(target) / (2 * Math.cos(Math.PI / 3) * this.radius));
     }
 
     *traceToPositions(trace) {
@@ -51,8 +51,8 @@ class Grid {
         return { c: this.center.output(), r: this.radius, s: this.size };
     }
 
-    static from(description) {
-        return new Grid(description.r, new Vector(...description.c), description.s, "#777");
+    static from({ r, c, s }) {
+        return new Grid(r, new Vector(...c), s, "#777");
     }
 }
 
@@ -60,23 +60,23 @@ class ReactiveGrid {
     constructor(canvas, grid) {
         this.grid = grid;
         this.canvas = canvas;
-        this.mouseCoordinates = new Position(-1, -1);
+        this.mousePosition = undefined;
         this.setListeners();
 
         canvas.addEventListener("mousedown", (event) => {
-            const coordinates = this.grid.getPosition(new Vector(event.offsetX, event.offsetY));
-            this.listeners.mousedown(coordinates)
+            const position = this.grid.getPositions(new Vector(event.offsetX, event.offsetY))[0];
+            this.listeners.mousedown(position)
         });
         canvas.addEventListener("mouseup", (event) => {
-            const coordinates = this.grid.getPosition(new Vector(event.offsetX, event.offsetY));
-            this.listeners.mouseup(coordinates)
+            const position = this.grid.getPositions(new Vector(event.offsetX, event.offsetY))[0];
+            this.listeners.mouseup(position)
         }
         )
         canvas.addEventListener("mousemove", (event) => {
-            const coordinates = this.grid.getPosition(new Vector(event.offsetX, event.offsetY));
-            if (!coordinates.equals(this.mouseCoordinates)) {
-                this.mouseCoordinates = coordinates;
-                this.listeners.mousemove(coordinates)
+            const position = this.grid.getPositions(new Vector(event.offsetX, event.offsetY))[0];
+            if (!this.mousePosition?.equals(position)) {
+                this.mousePosition = position;
+                this.listeners.mousemove(position)
             }
         })
         window.addEventListener("keydown", (event) => {
@@ -95,13 +95,12 @@ class ReactiveGrid {
 
     setListeners(
         listeners = {
-            mousedown: () => {},
-            mousemove: () => {},
-            mouseup: () => {},
-            left: () => {},
-            right: () => {},
-        })
-    {
+            mousedown: () => { },
+            mousemove: () => { },
+            mouseup: () => { },
+            left: () => { },
+            right: () => { },
+        }) {
         this.listeners = listeners;
     }
 
@@ -110,47 +109,10 @@ class ReactiveGrid {
     }
 }
 
-// TODO more consistent use of vector
 class Position {
     constructor(u, v) {
-        this.coordinates = [u, v];
-    }
-
-    static fromNormalizedCartesian(cartesian) {
-        const { ceil, floor } = Math;
-
-        const solveFor = (vector) => {
-            const matrix = new Matrix(Position.base).invert();
-            return matrix.multiply(vector);
-        }
-
-        const roundToCenter = (candidates) => {
-            let minDistance = Infinity;
-            const distances = candidates.map(candidate => {
-                const candidateCartesian = candidate.toNormalizedCartesian();
-                const distance = cartesian.distance(candidateCartesian);
-
-                if (distance < minDistance) {
-                    minDistance = distance;
-                }
-                return distance;
-            })
-            const positions = candidates
-                .filter((_, i) => Math.abs(minDistance - distances[i]) < 0.01)
-                .filter((position, i, self) => self.findIndex(other => other.equals(position)) === i);
-            return positions;
-
-        }
-
-        const vector = solveFor(cartesian).v;
-        let candidates = [
-            [floor(vector[0]), floor(vector[1])],
-            [floor(vector[0]), ceil(vector[1])],
-            [ceil(vector[0]), ceil(vector[1])],
-            [ceil(vector[0]), floor(vector[1])],
-        ].map(candidate => new Position(...candidate));
-
-        return roundToCenter(candidates);
+        this.u = u;
+        this.v = v;
     }
 
     static base = [
@@ -158,10 +120,6 @@ class Position {
         [Math.sin(Math.PI / 3), Math.sin(Math.PI / 3)],
     ]
 
-    toNormalizedCartesian() {
-        const matrix = new Matrix(Position.base);
-        return matrix.multiply(new Vector(...this.coordinates));
-    }
 
     static *circle(radius) {
         for (let u = 0; u < radius; u++) {
@@ -175,31 +133,46 @@ class Position {
         }
     }
 
-    isNeighbor(other) {
-        const cartesian = this.toNormalizedCartesian();
-        const otherCartesian = other.toNormalizedCartesian();
-        return Math.abs(cartesian.distance(otherCartesian) - 2 * Math.sin(Math.PI / 3)) < 0.01;
+    static fromNormalizedCartesian(cartesian) {
+        const matrix = new Matrix(Position.base).invert();
+        const vector = matrix.multiply(cartesian);
+        let candidates = vector.rounded().map(candidate => new Position(...candidate));
+
+        let minDistance = Infinity;
+        const distances = candidates.map(candidate => {
+            const candidateCartesian = candidate.toNormalizedCartesian();
+            const distance = cartesian.distance(candidateCartesian);
+
+            if (distance < minDistance) {
+                minDistance = distance;
+            }
+            return distance;
+        })
+        const positions = candidates
+            .filter((_, i) => Math.abs(minDistance - distances[i]) < 0.01)
+            .filter((position, i, self) => self.findIndex(other => other.equals(position)) === i);
+        return positions;
+    }
+
+    toNormalizedCartesian() {
+        const matrix = new Matrix(Position.base);
+        return matrix.multiply(new Vector(this.u, this.v));
     }
 
     isInside(radius) {
-        if (Math.sign(this.coordinates[0]) === Math.sign(this.coordinates[1])) {
-            return this.coordinates.every(u => Math.abs(u) < radius);
+        if (Math.sign(this.u) === Math.sign(this.v)) {
+            return Math.abs(this.u) < radius && Math.abs(this.v) < radius;
         } else {
-            return Math.abs(this.coordinates[0]) + Math.abs(this.coordinates[1]) < radius;
+            return Math.abs(this.u) + Math.abs(this.v) < radius;
         }
     }
 
-
     equals(other) {
-        return this.coordinates.every((v, i) => v === other.coordinates[i]);
-    }
-
-    every(predicate) {
-        return this.coordinates.every(predicate);
+        return this.u === other.u && this.v === other.v;
     }
 
     output() {
-        return [...this.coordinates];
+        return [this.u, this.v];
     }
 }
 
@@ -228,26 +201,11 @@ class Matrix {
         // assuming 2x2 matrix
         return this.rows[0][0] * this.rows[1][1] - this.rows[1][0] * this.rows[0][1];
     }
-
-    transpose() {
-        const rows = []
-        for (let i = 0; i < this.rows.length; i++) {
-            for (let j = 0; j < this.rows[i].length; j++) {
-                if (rows.length <= j) {
-                    rows.push([this.rows[i][j]]);
-                } else {
-                    rows[j].push(this.rows[i][j]);
-                }
-            }
-        }
-
-        return new Matrix(rows);
-    }
 }
 
 class Vector {
     constructor(...v) {
-        this.v = [...v];
+        this.v = v;
     }
 
     add(other) {
@@ -269,6 +227,18 @@ class Vector {
     distance(other) {
         const diff = other.subtract(this);
         return Math.sqrt(diff.dotProduct(diff));
+    }
+
+    rounded() {
+        // assuming 2 vector
+        const { ceil, floor } = Math;
+        const v = this.v;
+        return [
+            [floor(v[0]), floor(v[1])],
+            [floor(v[0]), ceil(v[1])],
+            [ceil(v[0]), ceil(v[1])],
+            [ceil(v[0]), floor(v[1])],
+        ];
     }
 
     output() {

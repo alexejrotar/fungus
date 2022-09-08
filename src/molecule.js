@@ -114,16 +114,8 @@ class DraggableMolecule extends Molecule {
     }
 }
 
-class Transpose {
-    constructor(source, target) {
-        this.source = source;
-        this.target = target;
-    }
-
+class Transformation {
     transform(position, grid, isOccupied, abort, hintAt) {
-        if (this.source.equals(this.target)) {
-            return position;
-        }
         const trace = this.getTrace(position, grid);
         const positions = Array.from(grid.traceToPositions(trace));
 
@@ -135,8 +127,15 @@ class Transpose {
                 return position;
             }
         }
-        if (positions.length === 0) return position;
         return positions[positions.length - 1];
+    }
+}
+
+class Transpose extends Transformation {
+    constructor(source, target) {
+        super();
+        this.source = source;
+        this.target = target;
     }
 
     getTrace(position, grid) {
@@ -145,33 +144,19 @@ class Transpose {
         const offset = cartesianTarget.subtract(cartesianSource);
         const cartesian = grid.getCartesian(position);
 
-        const maxDistance = Math.floor(cartesianSource.distance(cartesianTarget) / (2 * Math.cos(Math.PI / 3) * grid.radius));
+        const maxDistance = grid.maxPositionsBetween(cartesianSource, cartesianTarget);
         if (maxDistance === 0) {
             return [cartesian.add(offset)];
         }
-        const steps = Array.from(Array(maxDistance + 1), (_, i) => i / maxDistance);
-        return steps.map(step => cartesian.add(offset.scale(step)));
+        return Array.from(Array(maxDistance + 1), (_, i) => cartesian.add(offset.scale(i / maxDistance)));
     }
 }
 
-class Rotation {
+class Rotation extends Transformation {
     constructor(pivot, rotation) {
+        super();
         this.pivot = pivot;
         this.rotation = rotation;
-    }
-    transform(position, grid, isOccupied, abort, hintAt) {
-        const trace = this.getTrace(position, grid);
-        const positions = Array.from(grid.traceToPositions(trace));
-
-        for (const transformed of positions) {
-            if (isOccupied(transformed)) {
-                hintAt(transformed);
-                hintAt(position);
-                abort();
-                return position;
-            }
-        }
-        return positions[positions.length - 1];
     }
 
     getTrace(position, grid) {
