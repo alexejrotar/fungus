@@ -89,6 +89,10 @@ class ReactiveGrid {
                     this.listeners.right();
                     break;
                 }
+                case "KeyD": {
+                    this.listeners.special();
+                    break;
+                }
             }
         })
     }
@@ -100,6 +104,7 @@ class ReactiveGrid {
             mouseup: () => { },
             left: () => { },
             right: () => { },
+            special: () => { },
         }) {
         this.listeners = listeners;
     }

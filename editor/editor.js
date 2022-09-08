@@ -4,6 +4,7 @@ class Editor {
         this.molecules = molecules;
         this.drawing = false;
         this.selectedIndex = 0;
+        this.deleteMode = false;
 
         this.outputContainer = outputContainer;
         this.grid = grid;
@@ -13,6 +14,7 @@ class Editor {
             mouseup: this.handleMouseup.bind(this),
             left: this.handleLeft.bind(this),
             right: this.handleRight.bind(this),
+            special: () => this.deleteMode = !this.deleteMode
         });
         this.updateOutput();
 
@@ -35,7 +37,7 @@ class Editor {
             if (this.selectedIndex < this.molecules.length && this.molecules[this.selectedIndex] === molecule) {
                 molecule.shape = molecule.shape.filter(other => !other.equals(position));
                 this.updateOutput();
-            } else {
+            } else if (this.deleteMode) {
                 this.molecules = this.molecules.filter(other => other !== molecule);
                 this.selectedIndex = this.molecules.length;
                 this.updateOutput();
@@ -118,7 +120,7 @@ class Editor {
     render() {
         const ctx = this.canvas.getContext("2d");
         ctx.save();
-        ctx.fillStyle = "#222";
+        ctx.fillStyle = this.deleteMode ? "#322" : "#222";
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         ctx.restore();
         this.grid.render(ctx);
@@ -130,12 +132,12 @@ function startEditor() {
     const canvas = document.getElementById("canvas");
     const outputArea = document.getElementById("output");
     const grid = new Grid(15, new Vector(canvas.width / 2, canvas.height / 2), 15, "#666");
-    const b64 = new URLSearchParams(window.location.search).get("description");
+    const b64 = new URLSearchParams(window.location.search).get("level");
     let molecules = [];
     if (b64) {
         const json = window.atob(b64);
         const { m } = JSON.parse(json);
-        molecules = Molecule.from(m, grid);
+        molecules = m.map(m => Molecule.from(m, grid));
     }
     const editor = new Editor(grid, canvas, outputArea, molecules);
     editor.start();
