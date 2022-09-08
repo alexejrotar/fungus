@@ -3,7 +3,7 @@ function startGame() {
   const introWrapper = document.getElementById("intro");
   let game;
 
-  const b64 = new URLSearchParams(window.location.search).get("description");
+  const b64 = new URLSearchParams(window.location.search).get("level");
   if (b64) {
     const json = window.atob(b64);
     const description = JSON.parse(json);

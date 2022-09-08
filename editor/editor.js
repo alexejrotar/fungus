@@ -7,12 +7,13 @@ class Editor {
 
         this.outputContainer = outputContainer;
         this.grid = grid;
-        (new ReactiveGrid(this.grid, canvas))
-            .withListener("mousedown", this.handleMousedown.bind(this))
-            .withListener("mousemove", this.handleMousemove.bind(this))
-            .withListener("mouseup", this.handleMouseup.bind(this))
-            .withListener("left", this.handleLeft.bind(this))
-            .withListener("right", this.handleRight.bind(this));
+        (new ReactiveGrid(canvas, grid)).setListeners({
+            mousedown: this.handleMousedown.bind(this),
+            mousemove: this.handleMousemove.bind(this),
+            mouseup: this.handleMouseup.bind(this),
+            left: this.handleLeft.bind(this),
+            right: this.handleRight.bind(this),
+        });
         this.updateOutput();
 
         this.outputContainer.addEventListener("input", () => this.handleInput())
@@ -75,7 +76,7 @@ class Editor {
             const { g, m } = JSON.parse(this.outputContainer.innerHTML.replaceAll(/\s/g, ""));
 
             let grid = Grid.from(g);
-            this.molecules = Molecule.from(m, grid);
+            this.molecules = m.map(m => Molecule.from(m, grid));
             this.selectedIndex = this.molecules.length;
         } catch (e) {
             console.warn(e);

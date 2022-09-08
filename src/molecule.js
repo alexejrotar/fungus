@@ -1,5 +1,5 @@
 class Molecule {
-    constructor(shape, grid, color = "#000") {
+    constructor(shape, grid, color) {
         this.shape = shape;
         this.grid = grid;
         this.color = color;
@@ -9,20 +9,15 @@ class Molecule {
         return this.shape.some(other => other.equals(position));
     }
 
-    // TODO eventually remove the defaults
-    transform(transformation, dissolve = () => { }, isOccupied = (_) => false, hintAt) {
+    transform(transformation, dissolve, isOccupied, hintAt) {
         let aborted = false;
-        const movedMolecule = this.copy();
-        for (let i = 0; i < movedMolecule.shape.length; i++) {
-            movedMolecule.shape[i] = transformation.transform(this.shape[i], this.grid, isOccupied, () => aborted = true, hintAt);
-        }
+        const shape = this.shape.map(position => transformation.transform(position, this.grid, isOccupied, () => aborted = true, hintAt));
 
-        if (aborted) return this;
+        if (aborted) return false;
 
-        if (movedMolecule.shape.every(position => !this.grid.isInside(position))) {
-            dissolve();
-        }
-        return movedMolecule;
+        if (shape.every(position => !this.grid.isInside(position))) dissolve();
+        this.shape = shape;
+        return true;
     }
 
     overlaps(molecule) {
@@ -39,10 +34,6 @@ class Molecule {
         ctx.restore();
     }
 
-    copy() {
-        return new Molecule(this.shape.map(position => position.copy()), this.grid, this.color);
-    }
-
     output() {
         return { c: this.color, s: this.shape.map(position => position.output()) };
     }
@@ -52,20 +43,21 @@ class Molecule {
     }
 
     unhighlighted() {
-        return this.copy();
+        return new Molecule(this.shape, this.grid, this.color);
     }
 
-    static from(description, grid) {
-        return description.map(({ s, c }) => {
-            const shape = s.map(pos => new Position(...pos));
-            return new Molecule(shape, grid, c);
+    draggable() {
+        return new DraggableMolecule(this.shape, this.grid, this.color);
+    }
 
-        })
+    static from({ s, c }, grid) {
+        const shape = s.map(pos => new Position(...pos));
+        return new Molecule(shape, grid, c);
     }
 }
 
 class HighlightedMolecule extends Molecule {
-    constructor(shape, grid, color = "#000") {
+    constructor(shape, grid, color) {
         super(shape, grid, color);
     }
 
@@ -80,31 +72,27 @@ class HighlightedMolecule extends Molecule {
     }
 }
 
-// TODO get rid of undefined
-class DraggableMolecule {
-    constructor(molecule) {
-        this.molecule = molecule;
+class DraggableMolecule extends Molecule {
+    constructor(shape, grid, color) {
+        super(shape, grid, color);
         this.selected = undefined;
     }
 
     mousedown(position) {
-        this.selected = this.molecule.isAt(position) ? position : undefined;
+        this.selected = super.isAt(position) ? position : undefined;
     }
 
     mousemoved(position, dissolve, isOccupied, hintAt) {
         if (!this.selected) return;
 
-        const previous = this.molecule;
-        this.molecule = this.molecule.transform(
+        const transformSuccessful = super.transform(
             new Transpose(this.selected, position),
             () => dissolve(this),
             isOccupied,
             hintAt,
         );
 
-        if (previous !== this.molecule) {
-            this.selected = position;
-        }
+        if (transformSuccessful) this.selected = position;
     }
 
     mouseup() {
@@ -112,34 +100,17 @@ class DraggableMolecule {
     }
 
     left(dissolve, isOccupied, hintAt) {
-        this.rotate(dissolve, isOccupied, new Rotation(this.selected, 1), hintAt);
-    }
-    right(dissolve, isOccupied, hintAt) {
-        this.rotate(dissolve, isOccupied, new Rotation(this.selected, -1), hintAt);
-    }
-
-    rotate(dissolve, isOccupied, rotation, hintAt) {
         if (!this.selected) return;
-        this.molecule = this.molecule.transform(rotation, () => dissolve(this), isOccupied, hintAt);
+        super.transform(new Rotation(this.selected, 1), () => dissolve(this), isOccupied, hintAt);
     }
 
-    render(ctx) {
-        this.molecule.render(ctx);
+    right(dissolve, isOccupied, hintAt) {
+        if (!this.selected) return;
+        super.transform(new Rotation(this.selected, -1), () => dissolve(this), isOccupied, hintAt);
     }
 
-    overlaps(molecule) {
-        return this.molecule.overlaps(molecule);
-    }
-
-    isAt(position) {
-        return this.molecule.isAt(position);
-    }
-
-    output() {
-        return this.molecule.output();
-    }
     static from(description, grid) {
-        return Molecule.from(description, grid).map(molecule => new DraggableMolecule(molecule))
+        return Molecule.from(description, grid).draggable();
     }
 }
 
@@ -180,10 +151,6 @@ class Transpose {
         }
         const steps = Array.from(Array(maxDistance + 1), (_, i) => i / maxDistance);
         return steps.map(step => cartesian.add(offset.scale(step)));
-    }
-
-    copy() {
-        return new Transpose(this.source.copy(), this.target.copy());
     }
 }
 

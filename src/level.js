@@ -1,15 +1,16 @@
 class Level {
-    constructor(grid, molecules = [], completed = () => {}) {
+    constructor(grid, molecules, reactive, completed = () => { }) {
         this.molecules = molecules;
         this.hints = [];
-        this.color = "#222";
         this.completed = completed;
-        this.grid = grid
-            .withListener("mousedown", position => this.handleMousedown(position))
-            .withListener("mousemove", position => this.handleMousemove(position))
-            .withListener("mouseup", position => this.handleMouseup(position))
-            .withListener("left", this.handleLeft.bind(this))
-            .withListener("right", this.handleRight.bind(this));
+        this.grid = grid;
+        reactive.setListeners({
+            mousedown: position => this.handleMousedown(position),
+            mousemove: position => this.handleMousemove(position),
+            mouseup: position => this.handleMouseup(position),
+            left: this.handleLeft.bind(this),
+            right: this.handleRight.bind(this),
+        })
     }
 
     isOccupied(molecules, position) {
@@ -22,7 +23,7 @@ class Level {
     }
 
     hintAt(position) {
-        this.hints.push(new Hint(position, this.expireHint.bind(this), this.grid.getHexagon.bind(this.grid)));
+        this.hints.push(new Hint(this.grid.getHexagon(position), this.expireHint.bind(this)));
     }
 
     expireHint(hint) {
@@ -31,8 +32,8 @@ class Level {
 
     render(ctx) {
         ctx.save();
-        ctx.fillStyle = this.color;
-        ctx.fillRect(0,0, ctx.canvas.width, ctx.canvas.height);
+        ctx.fillStyle = "#222";
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         ctx.restore();
 
         this.grid.render(ctx);

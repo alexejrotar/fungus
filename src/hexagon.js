@@ -1,30 +1,19 @@
 class Hexagon {
-    constructor(radius, cartesian) {
-        this.cartesian = cartesian;
+    constructor(radius, center) {
+        this.center = center;
         this.radius = radius;
-        this.sides = [];
+        this.corners = [];
     }
 
-    getSides() {
-        if (this.sides.length === 0) {
-            for (let i = 0; i < 6; i++) {
-                const source = this.getCartesian(i);
-                const target = this.getCartesian(i + 1);
-                this.sides.push([source, target]);
-            }
+    getCorners() {
+        if (this.corners.length === 0) {
+            this.corners = Array.from({ length: 6 }, (_, i) => this.center
+                .add(new Vector(
+                    this.radius * Math.cos(i * Math.PI / 3),
+                    this.radius * Math.sin(i * Math.PI / 3)
+                )));
         }
-        return this.sides;
-    }
-
-
-    getCartesian(index) {
-        const cartesian = this.cartesian
-            .add(new Vector(
-                this.radius * Math.cos(index * Math.PI / 3),
-                this.radius * Math.sin(index * Math.PI / 3)
-            ))
-        return cartesian;
-
+        return this.corners;
     }
 }
 
@@ -36,15 +25,16 @@ class RenderedHexagon {
     }
 
     render(ctx) {
-        const sides = this.hexagon.getSides();
+        const corners = this.hexagon.getCorners();
         ctx.save();
 
         ctx.strokeStyle = this.color;
         ctx.beginPath();
-        ctx.moveTo(sides[0][0].v[0], sides[0][0].v[1]);
-        for (const side of sides) {
-            ctx.lineTo(side[1].v[0], side[1].v[1]);
+        ctx.moveTo(corners[0].v[0], corners[0].v[1]);
+        for (const corner of corners) {
+            ctx.lineTo(corner.v[0], corner.v[1]);
         }
+        ctx.closePath();
         ctx.stroke();
 
         ctx.fillStyle = this.color;

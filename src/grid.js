@@ -56,65 +56,57 @@ class Grid {
     }
 }
 
-// TODO enable removing of listeners
 class ReactiveGrid {
-    constructor(grid, canvas) {
+    constructor(canvas, grid) {
         this.grid = grid;
         this.canvas = canvas;
         this.mouseCoordinates = new Position(-1, -1);
-        this.listeners = {
-            mousedown: [],
-            mousemove: [],
-            mouseup: [],
-            left: [],
-            right: [],
-        };
+        this.setListeners();
+
         canvas.addEventListener("mousedown", (event) => {
             const coordinates = this.grid.getPosition(new Vector(event.offsetX, event.offsetY));
-            this.listeners.mousedown.forEach(cb => cb(coordinates))
+            this.listeners.mousedown(coordinates)
         });
         canvas.addEventListener("mouseup", (event) => {
             const coordinates = this.grid.getPosition(new Vector(event.offsetX, event.offsetY));
-            this.listeners.mouseup.forEach(cb => cb(coordinates))
+            this.listeners.mouseup(coordinates)
         }
         )
         canvas.addEventListener("mousemove", (event) => {
             const coordinates = this.grid.getPosition(new Vector(event.offsetX, event.offsetY));
             if (!coordinates.equals(this.mouseCoordinates)) {
                 this.mouseCoordinates = coordinates;
-                this.listeners.mousemove.forEach(cb => cb(coordinates))
+                this.listeners.mousemove(coordinates)
             }
         })
         window.addEventListener("keydown", (event) => {
             switch (event.code) {
                 case "KeyQ": {
-                    this.listeners.left.forEach(cb => cb());
+                    this.listeners.left();
                     break;
                 }
                 case "KeyE": {
-                    this.listeners.right.forEach(cb => cb());
+                    this.listeners.right();
                     break;
                 }
             }
         })
     }
 
-    withListener(eventName, callback) {
-        if (!eventName in this.listeners) return;
-        this.listeners[eventName].push(callback);
-        return this;
+    setListeners(
+        listeners = {
+            mousedown: () => {},
+            mousemove: () => {},
+            mouseup: () => {},
+            left: () => {},
+            right: () => {},
+        })
+    {
+        this.listeners = listeners;
     }
 
-    render(ctx) {
-        this.grid.render(ctx);
-    }
-
-    output() {
-        return this.grid.output();
-    }
-
-    getHexagon(position) {
-        return this.grid.getHexagon(position);
+    setGrid(grid) {
+        this.grid = grid;
     }
 }
 
@@ -204,10 +196,6 @@ class Position {
 
     every(predicate) {
         return this.coordinates.every(predicate);
-    }
-
-    copy() {
-        return new Position(...this.coordinates);
     }
 
     output() {
