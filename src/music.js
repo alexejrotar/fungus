@@ -1,15 +1,14 @@
 const TEMPO = 400;
-const channels = 2;
-const SCALES = [
-  [110, 130.8128, 164.8138],
-  [220, 246.9416, 261.6256, 293.6648, 329.6276, 369.9944, 415.304]
-];
+const scales = [
+        makeScale([0, 3, 7], 2, 2),
+        makeScale([0, 2, 3, 5, 7, 8, 11], 3, 2)
+      ];
 
 let playing = false;
 const ctx = new (window.AudioContext || window.webkitAudioContext)();
 const gain = ctx.createGain();
 gain.connect(ctx.destination);
-const merger = ctx.createChannelMerger(channels);
+const merger = ctx.createChannelMerger(scales.length);
 merger.connect(gain);
 
 class Music {
@@ -39,7 +38,7 @@ class Oscillator {
   }
 
   start() {
-    gain.gain.setValueAtTime(1 / (2 * channels), ctx.currentTime);
+    gain.gain.setValueAtTime(1 / 4, ctx.currentTime);
     this.interval = setInterval(() => {
       this.osc.frequency.setValueAtTime(this.randomNote(), ctx.currentTime);
     }, this.tempo);
@@ -65,10 +64,18 @@ function initializeMusic() {
 
   toggleButton.onclick = () => {
     if (!music) {
-      music = new Music(SCALES);
+      music = new Music(scales);
     }
     playing ? music.off() : music.on();
     toggleButton.textContent = playing ? "Music On" : "Music Off";
     playing = !playing;
   };
+}
+
+function makeScale(notes, octave, range = 1) {
+  const a0 = 27.5;
+  const chromatic = Array.from({length: 12 * range}, (_, i) => a0 * 2**(i/12));
+  return chromatic
+    .filter((_, i) => notes.includes(i % 12))
+    .map(note => note * 2**octave);
 }
