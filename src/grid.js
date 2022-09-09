@@ -7,9 +7,9 @@ class Grid {
         this.circle = Array.from(Position.circle(this.size)).map(position => this.getHexagon(position));
     }
 
-    render(ctx) {
+    render() {
         for (const hexagon of this.circle) {
-            (new RenderedHexagon(hexagon, this.color)).render(ctx);
+            (new RenderedHexagon(hexagon, this.color)).render();
         }
     }
 
@@ -57,23 +57,21 @@ class Grid {
 }
 
 class ReactiveGrid {
-    constructor(canvas, grid) {
-        this.grid = grid;
-        this.canvas = canvas;
+    constructor() {
         this.mousePosition = undefined;
         this.setListeners();
 
         canvas.addEventListener("mousedown", (event) => {
-            const position = this.grid.getPositions(new Vector(event.offsetX, event.offsetY))[0];
+            const position = grid.getPositions(new Vector(event.offsetX, event.offsetY))[0];
             this.listeners.mousedown(position)
         });
         canvas.addEventListener("mouseup", (event) => {
-            const position = this.grid.getPositions(new Vector(event.offsetX, event.offsetY))[0];
+            const position = grid.getPositions(new Vector(event.offsetX, event.offsetY))[0];
             this.listeners.mouseup(position)
         }
         )
         canvas.addEventListener("mousemove", (event) => {
-            const position = this.grid.getPositions(new Vector(event.offsetX, event.offsetY))[0];
+            const position = grid.getPositions(new Vector(event.offsetX, event.offsetY))[0];
             if (!this.mousePosition || !this.mousePosition.equals(position)) {
                 this.mousePosition = position;
                 this.listeners.mousemove(position)
@@ -87,7 +85,7 @@ class ReactiveGrid {
                 touch.clientX - br.left,
                 touch.clientY - br.top
             ]
-            const position = this.grid.getPositions(new Vector(...v))[0];
+            const position = grid.getPositions(new Vector(...v))[0];
             this.listeners.mousedown(position)
         });
         canvas.addEventListener("touchend", (event) => {
@@ -98,7 +96,7 @@ class ReactiveGrid {
                 touch.clientX - br.left,
                 touch.clientY - br.top
             ]
-            const position = this.grid.getPositions(new Vector(...v))[0];
+            const position = grid.getPositions(new Vector(...v))[0];
             this.listeners.mouseup(position)
         }
         )
@@ -111,7 +109,7 @@ class ReactiveGrid {
                 touch.clientX - br.left,
                 touch.clientY - br.top
             ]
-            const position = this.grid.getPositions(new Vector(...v))[0];
+            const position = grid.getPositions(new Vector(...v))[0];
             if (!this.mousePosition || !this.mousePosition.equals(position)) {
                 this.mousePosition = position;
                 this.listeners.mousemove(position)
@@ -145,10 +143,6 @@ class ReactiveGrid {
             special: () => { },
         }) {
         this.listeners = listeners;
-    }
-
-    setGrid(grid) {
-        this.grid = grid;
     }
 }
 

@@ -5,10 +5,10 @@ const scales = [
       ];
 
 let playing = false;
-const ctx = new (window.AudioContext || window.webkitAudioContext)();
-const gain = ctx.createGain();
-gain.connect(ctx.destination);
-const merger = ctx.createChannelMerger(scales.length);
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const gain = audioCtx.createGain();
+gain.connect(audioCtx.destination);
+const merger = audioCtx.createChannelMerger(scales.length);
 merger.connect(gain);
 
 class Music {
@@ -30,22 +30,22 @@ class Oscillator {
     this.scale = scale;
     this.tempo = tempo;
 
-    this.osc = ctx.createOscillator();
+    this.osc = audioCtx.createOscillator();
     this.osc.connect(merger, 0, channel);
-    // this.osc.frequency.setValueAtTime(this.randomNote(), ctx.currentTime);
+    // this.osc.frequency.setValueAtTime(this.randomNote(), audioCtx.currentTime);
     this.index = 0;
   }
 
   start() {
     this.osc.start();
-    gain.gain.setValueAtTime(1 / 4, ctx.currentTime);
+    gain.gain.setValueAtTime(1 / 4, audioCtx.currentTime);
     this.interval = setInterval(() => {
-      this.osc.frequency.setValueAtTime(this.randomNote(), ctx.currentTime);
+      this.osc.frequency.setValueAtTime(this.randomNote(), audioCtx.currentTime);
     }, this.tempo);
   }
 
   stop() {
-    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.setValueAtTime(0, audioCtx.currentTime);
     clearInterval(this.interval);
   }
 

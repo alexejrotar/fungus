@@ -1,17 +1,24 @@
 let game;
+let canvas;
+let ctx;
+let introBox;
+let grid;
+let reactive;
 
 function startGame() {
-  const canvas = document.getElementById("canvas");
-  const introWrapper = document.getElementById("intro");
-  const grid = new Grid(15, new Vector(500, 500), 15, "#777");
+  canvas = document.getElementById("canvas");
+  ctx = canvas.getContext("2d");
+  introBox = document.getElementById("intro");
+  grid = new Grid(15, new Vector(canvas.width/2, canvas.height/2), 15, "#777");
+  reactive = new ReactiveGrid();
 
   const b64 = new URLSearchParams(window.location.search).get("level");
   if (b64) {
     const json = window.atob(b64);
     const description = JSON.parse(json);
-    game = new Game(grid, [description], canvas, introWrapper);
+    game = new Game([description]);
   } else {
-    game = new Game(grid, levelCollection, canvas, introWrapper);
+    game = new Game(levelCollection);
   }
 
   game.start();

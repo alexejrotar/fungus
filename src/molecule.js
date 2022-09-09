@@ -1,7 +1,6 @@
 class Molecule {
-    constructor(shape, grid, color) {
+    constructor(shape,color) {
         this.shape = shape;
-        this.grid = grid;
         this.color = color;
     }
 
@@ -11,11 +10,11 @@ class Molecule {
 
     transform(transformation, dissolve, isOccupied, hintAt) {
         let aborted = false;
-        const shape = this.shape.map(position => transformation.transform(position, this.grid, isOccupied, () => aborted = true, hintAt));
+        const shape = this.shape.map(position => transformation.transform(position, isOccupied, () => aborted = true, hintAt));
 
         if (aborted) return false;
 
-        if (shape.every(position => !this.grid.isInside(position))) dissolve();
+        if (shape.every(position => !grid.isInside(position))) dissolve();
         this.shape = shape;
         return true;
     }
@@ -24,12 +23,12 @@ class Molecule {
         return this.shape.some(position => molecule.isAt(position));
     }
 
-    render(ctx) {
+    render() {
         ctx.save();
         ctx.lineWidth = 3;
         this.shape.forEach(position => {
-            let hexagon = this.grid.getHexagon(position);
-            (new RenderedHexagon(hexagon, this.color, 0.4)).render(ctx);
+            let hexagon = grid.getHexagon(position);
+            (new RenderedHexagon(hexagon, this.color, 0.4)).render();
         })
         ctx.restore();
     }
@@ -39,42 +38,42 @@ class Molecule {
     }
 
     highlighted() {
-        return new HighlightedMolecule(this.shape, this.grid, this.color);
+        return new HighlightedMolecule(this.shape, this.color);
     }
 
     unhighlighted() {
-        return new Molecule(this.shape, this.grid, this.color);
+        return new Molecule(this.shape, this.color);
     }
 
     draggable() {
-        return new DraggableMolecule(this.shape, this.grid, this.color);
+        return new DraggableMolecule(this.shape, this.color);
     }
 
-    static from({ s, c }, grid) {
+    static from({ s, c }) {
         const shape = s.map(pos => new Position(...pos));
-        return new Molecule(shape, grid, c);
+        return new Molecule(shape, c);
     }
 }
 
 class HighlightedMolecule extends Molecule {
-    constructor(shape, grid, color) {
-        super(shape, grid, color);
+    constructor(shape, color) {
+        super(shape, color);
     }
 
-    render(ctx) {
+    render() {
         ctx.save();
         ctx.lineWidth = 3;
         this.shape.forEach(position => {
-            let hexagon = this.grid.getHexagon(position);
-            (new RenderedHexagon(hexagon, this.color, 0.7)).render(ctx);
+            let hexagon = grid.getHexagon(position);
+            (new RenderedHexagon(hexagon, this.color, 0.7)).render();
         })
         ctx.restore();
     }
 }
 
 class DraggableMolecule extends Molecule {
-    constructor(shape, grid, color) {
-        super(shape, grid, color);
+    constructor(shape, color) {
+        super(shape, color);
         this.selected = undefined;
     }
 
@@ -109,14 +108,14 @@ class DraggableMolecule extends Molecule {
         super.transform(new Rotation(this.selected, -1), () => dissolve(this), isOccupied, hintAt);
     }
 
-    static from(description, grid) {
-        return Molecule.from(description, grid).draggable();
+    static from(description) {
+        return Molecule.from(description).draggable();
     }
 }
 
 class Transformation {
-    transform(position, grid, isOccupied, abort, hintAt) {
-        const trace = this.getTrace(position, grid);
+    transform(position, isOccupied, abort, hintAt) {
+        const trace = this.getTrace(position);
         const positions = Array.from(grid.traceToPositions(trace));
 
         for (const transformed of positions) {
@@ -138,7 +137,7 @@ class Transpose extends Transformation {
         this.target = target;
     }
 
-    getTrace(position, grid) {
+    getTrace(position) {
         const cartesianSource = grid.getCartesian(this.source);
         const cartesianTarget = grid.getCartesian(this.target);
         const offset = cartesianTarget.subtract(cartesianSource);
@@ -159,7 +158,7 @@ class Rotation extends Transformation {
         this.rotation = rotation;
     }
 
-    getTrace(position, grid) {
+    getTrace(position) {
         const { sin, cos, PI } = Math;
         const pivotCartesian = grid.getCartesian(this.pivot);
         const cartesian = grid.getCartesian(position).subtract(pivotCartesian);

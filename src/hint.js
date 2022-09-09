@@ -5,12 +5,12 @@ class Hint {
         this.fade = 10;
     }
 
-    render(ctx) {
+    render() {
         if (this.fade === 0) {
             this.expire(this);
             return;
         }
-        (new RenderedHexagon(this.hexagon, "white", this.fade / 10)).render(ctx);
+        (new RenderedHexagon(this.hexagon, "white", this.fade / 10)).render();
         this.fade--;
     }
 }

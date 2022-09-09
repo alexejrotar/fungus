@@ -24,7 +24,7 @@ class RenderedHexagon {
         this.alpha = alpha;
     }
 
-    render(ctx) {
+    render() {
         const corners = this.hexagon.getCorners();
         ctx.save();
 

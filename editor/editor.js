@@ -1,14 +1,11 @@
 class Editor {
-    constructor(grid, canvas, outputContainer, molecules = []) {
-        this.canvas = canvas;
+    constructor(molecules = []) {
         this.molecules = molecules;
         this.drawing = false;
         this.selectedIndex = 0;
         this.deleteMode = false;
 
-        this.outputContainer = outputContainer;
-        this.grid = grid;
-        (new ReactiveGrid(canvas, grid)).setListeners({
+        reactive.setListeners({
             mousedown: this.handleMousedown.bind(this),
             mousemove: this.handleMousemove.bind(this),
             mouseup: this.handleMouseup.bind(this),
@@ -18,7 +15,7 @@ class Editor {
         });
         this.updateOutput();
 
-        this.outputContainer.addEventListener("input", () => this.handleInput())
+        outputBox.addEventListener("input", () => this.handleInput())
         const shareButton = document.getElementById("share");
         shareButton.addEventListener("click", () => this.share());
 
@@ -45,7 +42,7 @@ class Editor {
             this.drawing = true;
             this.molecules[this.selectedIndex].shape.push(position);
         } else {
-            molecule = new HighlightedMolecule([position], this.grid, randomColor());
+            molecule = new HighlightedMolecule([position], randomColor());
             this.molecules.push(molecule);
             this.selectedIndex = this.molecules.length - 1;
             this.drawing = true;
@@ -70,14 +67,14 @@ class Editor {
         const output = {
             m: this.molecules.map(molecule => molecule.output()),
         };
-        this.outputContainer.innerHTML = JSON.stringify(output);
+        outputBox.innerHTML = JSON.stringify(output);
     }
 
     handleInput() {
         try {
-            const { m } = JSON.parse(this.outputContainer.innerHTML.replaceAll(/\s/g, ""));
+            const { m } = JSON.parse(outputBox.innerHTML.replaceAll(/\s/g, ""));
 
-            this.molecules = m.map(m => Molecule.from(m, this.grid));
+            this.molecules = m.map(m => Molecule.from(m));
             this.selectedIndex = this.molecules.length;
         } catch (e) {
             console.warn(e);
@@ -119,20 +116,27 @@ class Editor {
     }
 
     render() {
-        const ctx = this.canvas.getContext("2d");
         ctx.save();
         ctx.fillStyle = this.deleteMode ? "#322" : "#222";
-        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.restore();
-        this.grid.render(ctx);
-        this.molecules.forEach(molecule => molecule.render(ctx));
+        grid.render();
+        this.molecules.forEach(molecule => molecule.render());
     }
 }
 
+let canvas;
+let ctx;
+let grid;
+let reactive;
+let outputBox;
+
 function startEditor() {
-    const canvas = document.getElementById("canvas");
-    const outputArea = document.getElementById("output");
-    const grid = new Grid(15, new Vector(canvas.width / 2, canvas.height / 2), 15, "#777");
+    canvas = document.getElementById("canvas");
+    ctx = this.canvas.getContext("2d");
+    outputBox = document.getElementById("output");
+    grid = new Grid(15, new Vector(canvas.width / 2, canvas.height / 2), 15, "#777");
+    reactive = new ReactiveGrid();
     const b64 = new URLSearchParams(window.location.search).get("level");
     let molecules = [];
     if (b64) {
@@ -140,7 +144,7 @@ function startEditor() {
         const { m } = JSON.parse(json);
         molecules = m.map(m => Molecule.from(m, grid));
     }
-    const editor = new Editor(grid, canvas, outputArea, molecules);
+    const editor = new Editor(molecules);
     editor.start();
 }
 

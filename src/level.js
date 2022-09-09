@@ -1,9 +1,8 @@
 class Level {
-    constructor(grid, molecules, reactive, completed = () => { }) {
+    constructor(molecules, completed = () => { }) {
         this.molecules = molecules;
         this.hints = [];
         this.completed = completed;
-        this.grid = grid;
         reactive.setListeners({
             mousedown: position => this.handleMousedown(position),
             mousemove: position => this.handleMousemove(position),
@@ -23,22 +22,22 @@ class Level {
     }
 
     hintAt(position) {
-        this.hints.push(new Hint(this.grid.getHexagon(position), this.expireHint.bind(this)));
+        this.hints.push(new Hint(grid.getHexagon(position), this.expireHint.bind(this)));
     }
 
     expireHint(hint) {
         this.hints = this.hints.filter(other => hint !== other);
     }
 
-    render(ctx) {
+    render() {
         ctx.save();
         ctx.fillStyle = "#222";
-        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.restore();
 
-        this.grid.render(ctx);
-        this.molecules.forEach(molecule => molecule.render(ctx));
-        this.hints.forEach(hint => hint.render(ctx));
+        grid.render();
+        this.molecules.forEach(molecule => molecule.render());
+        this.hints.forEach(hint => hint.render());
     }
 
     handleMousedown(position) {
