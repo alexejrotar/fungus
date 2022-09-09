@@ -1,0 +1,14 @@
+{
+  "name": "fungus",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:alexejrotar/fungus.git",
+  "author": "Alexej Rotar <alexejrotar@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@sailshq/grunt-contrib-uglify": "^3.2.1",
+    "grunt": "~0.4.5",
+    "grunt-contrib-concat": "^2.1.0",
+    "grunt-contrib-jshint": "~0.10.0"
+  }
+}

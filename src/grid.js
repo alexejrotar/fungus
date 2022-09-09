@@ -1,5 +1,5 @@
 class Grid {
-    constructor(radius, center, size, color = "#000") {
+    constructor(radius, center, size, color) {
         this.radius = radius;
         this.center = center;
         this.size = size;
@@ -74,7 +74,7 @@ class ReactiveGrid {
         )
         canvas.addEventListener("mousemove", (event) => {
             const position = this.grid.getPositions(new Vector(event.offsetX, event.offsetY))[0];
-            if (!this.mousePosition?.equals(position)) {
+            if (!this.mousePosition || !this.mousePosition.equals(position)) {
                 this.mousePosition = position;
                 this.listeners.mousemove(position)
             }
@@ -118,13 +118,13 @@ class Position {
     constructor(u, v) {
         this.u = u;
         this.v = v;
+        if (!Position.base) {
+            Position.base = [
+                [1 + Math.cos(Math.PI / 3), - (1 + Math.cos(Math.PI / 3))],
+                [Math.sin(Math.PI / 3), Math.sin(Math.PI / 3)],
+            ]
+        }
     }
-
-    static base = [
-        [1 + Math.cos(Math.PI / 3), - (1 + Math.cos(Math.PI / 3))],
-        [Math.sin(Math.PI / 3), Math.sin(Math.PI / 3)],
-    ]
-
 
     static *circle(radius) {
         for (let u = 0; u < radius; u++) {

@@ -1,10 +1,11 @@
 class Game {
-    constructor(levelDescriptions, canvas, introWrapper) {
+    constructor(grid, levelDescriptions, canvas, introWrapper) {
         this.canvas = canvas;
         this.levelDescriptions = levelDescriptions;
         this.introWrapper = introWrapper;
         this.currentLevel = undefined;
-        this.reactive = new ReactiveGrid(canvas);
+        this.grid = grid;
+        this.reactive = new ReactiveGrid(canvas, grid);
         introWrapper.addEventListener("click", () => introWrapper.classList.add("closed"));
     }
 
@@ -16,17 +17,13 @@ class Game {
     nextLevel() {
         if (this.levelDescriptions.length === 0) return;
         const desc = this.levelDescriptions.shift();
-        const { g, m } = desc;
         if (desc.t !== undefined) {
             this.introWrapper.innerHTML = desc.t;
             this.introWrapper.classList.remove("closed");
         }
 
-        let grid = Grid.from(g);
-        const molecules = m.map(m => DraggableMolecule.from(m, grid));
-        this.reactive.setGrid(grid);
-
-        this.currentLevel = new Level(grid, molecules, this.reactive, () => this.nextLevel());
+        const molecules = desc.m.map(m => DraggableMolecule.from(m, this.grid));
+        this.currentLevel = new Level(this.grid, molecules, this.reactive, () => this.nextLevel());
     }
 
     render() {
@@ -35,6 +32,6 @@ class Game {
         ctx.fillStyle = "white";
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         ctx.restore();
-        this.currentLevel?.render(ctx);
+        this.currentLevel.render(ctx);
     }
 }

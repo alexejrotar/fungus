@@ -1,2 +1,4 @@
 *.zip
 submission/
+node_modules
+dist

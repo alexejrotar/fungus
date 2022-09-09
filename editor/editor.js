@@ -67,7 +67,6 @@ class Editor {
 
     updateOutput() {
         const output = {
-            g: this.grid.output(),
             m: this.molecules.filter(molecule => molecule.shape.length > 0).map(molecule => molecule.output()),
         };
         this.outputContainer.innerHTML = JSON.stringify(output);
@@ -75,10 +74,9 @@ class Editor {
 
     handleInput() {
         try {
-            const { g, m } = JSON.parse(this.outputContainer.innerHTML.replaceAll(/\s/g, ""));
+            const { m } = JSON.parse(this.outputContainer.innerHTML.replaceAll(/\s/g, ""));
 
-            let grid = Grid.from(g);
-            this.molecules = m.map(m => Molecule.from(m, grid));
+            this.molecules = m.map(m => Molecule.from(m, this.grid));
             this.selectedIndex = this.molecules.length;
         } catch (e) {
             console.warn(e);
@@ -105,7 +103,6 @@ class Editor {
     }
     share() {
         const output = {
-            g: this.grid.output(),
             m: this.molecules.map(molecule => molecule.output()),
         };
         const json = JSON.stringify(output);
@@ -131,7 +128,7 @@ class Editor {
 function startEditor() {
     const canvas = document.getElementById("canvas");
     const outputArea = document.getElementById("output");
-    const grid = new Grid(15, new Vector(canvas.width / 2, canvas.height / 2), 15, "#666");
+    const grid = new Grid(15, new Vector(canvas.width / 2, canvas.height / 2), 15, "#777");
     const b64 = new URLSearchParams(window.location.search).get("level");
     let molecules = [];
     if (b64) {
