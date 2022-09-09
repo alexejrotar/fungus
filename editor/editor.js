@@ -109,6 +109,9 @@ class Editor {
         const json = JSON.stringify(output);
         const b64 = window.btoa(json);
         navigator.clipboard.writeText(b64);
+        const url = new URL("/index.html", window.location.origin);
+        url.searchParams.set("level", b64);
+        window.open(url, "_blank");
     }
 
     start() {
