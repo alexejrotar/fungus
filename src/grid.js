@@ -79,6 +79,44 @@ class ReactiveGrid {
                 this.listeners.mousemove(position)
             }
         })
+        canvas.addEventListener("touchstart", (event) => {
+            event.preventDefault();
+            const touch = event.changedTouches[0];
+            const br = event.target.getBoundingClientRect();
+            const v = [
+                touch.clientX - br.left,
+                touch.clientY - br.top
+            ]
+            const position = this.grid.getPositions(new Vector(...v))[0];
+            this.listeners.mousedown(position)
+        });
+        canvas.addEventListener("touchend", (event) => {
+            event.preventDefault();
+            const touch = event.changedTouches[0];
+            const br = event.target.getBoundingClientRect();
+            const v = [
+                touch.clientX - br.left,
+                touch.clientY - br.top
+            ]
+            const position = this.grid.getPositions(new Vector(...v))[0];
+            this.listeners.mouseup(position)
+        }
+        )
+        canvas.addEventListener("touchmove", (event) => {
+            event.preventDefault();
+            event.preventDefault();
+            const touch = event.changedTouches[0];
+            const br = event.target.getBoundingClientRect();
+            const v = [
+                touch.clientX - br.left,
+                touch.clientY - br.top
+            ]
+            const position = this.grid.getPositions(new Vector(...v))[0];
+            if (!this.mousePosition || !this.mousePosition.equals(position)) {
+                this.mousePosition = position;
+                this.listeners.mousemove(position)
+            }
+        })
         window.addEventListener("keydown", (event) => {
             switch (event.code) {
                 case "KeyQ": {

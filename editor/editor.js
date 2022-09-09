@@ -36,11 +36,9 @@ class Editor {
         if (molecule !== undefined) {
             if (this.selectedIndex < this.molecules.length && this.molecules[this.selectedIndex] === molecule) {
                 molecule.shape = molecule.shape.filter(other => !other.equals(position));
-                this.updateOutput();
             } else if (this.deleteMode) {
                 this.molecules = this.molecules.filter(other => other !== molecule);
                 this.selectedIndex = this.molecules.length;
-                this.updateOutput();
             }
 
         } else if (this.selectedIndex < this.molecules.length) {
@@ -52,12 +50,14 @@ class Editor {
             this.selectedIndex = this.molecules.length - 1;
             this.drawing = true;
         }
+        this.updateOutput();
     }
 
     handleMousemove(position) {
         if (!this.drawing) return;
         if (this.molecules.some(molecule => molecule.isAt(position))) return;
         this.molecules[this.selectedIndex].shape.push(position);
+        this.updateOutput();
     }
 
     handleMouseup() {
@@ -66,8 +66,9 @@ class Editor {
     }
 
     updateOutput() {
+        this.molecules = this.molecules.filter(molecule => molecule.shape.length > 0);
         const output = {
-            m: this.molecules.filter(molecule => molecule.shape.length > 0).map(molecule => molecule.output()),
+            m: this.molecules.map(molecule => molecule.output()),
         };
         this.outputContainer.innerHTML = JSON.stringify(output);
     }
