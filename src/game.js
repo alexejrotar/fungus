@@ -4,6 +4,7 @@ class Game {
         this.levelDescriptions = levelDescriptions;
         this.introWrapper = introWrapper;
         this.currentLevel = undefined;
+        this.levelIndex = localStorage.getItem("levelIndex") ?? 0;
         this.grid = grid;
         this.reactive = new ReactiveGrid(canvas, grid);
         introWrapper.addEventListener("click", () => introWrapper.classList.add("closed"));
@@ -15,8 +16,14 @@ class Game {
     }
 
     nextLevel() {
-        if (this.levelDescriptions.length === 0) return;
-        const desc = this.levelDescriptions.shift();
+        if (this.levelIndex >= this.levelDescriptions.length) return;
+        this.levelIndex++;
+        this.resetLevel();
+    }
+
+    resetLevel() {
+        localStorage.setItem("levelIndex", this.levelIndex - 1);
+        const desc = this.levelDescriptions[this.levelIndex - 1];
         if (desc.t !== undefined) {
             this.introWrapper.innerHTML = desc.t;
             this.introWrapper.classList.remove("closed");
@@ -24,6 +31,11 @@ class Game {
 
         const molecules = desc.m.map(m => DraggableMolecule.from(m, this.grid));
         this.currentLevel = new Level(this.grid, molecules, this.reactive, () => this.nextLevel());
+    }
+
+    resetGame() {
+        this.levelIndex = 1;
+        this.resetLevel();
     }
 
     render() {

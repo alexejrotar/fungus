@@ -1,7 +1,8 @@
+let game;
+
 function startGame() {
   const canvas = document.getElementById("canvas");
   const introWrapper = document.getElementById("intro");
-  let game;
   const grid = new Grid(15, new Vector(500, 500), 15, "#777");
 
   const b64 = new URLSearchParams(window.location.search).get("level");
@@ -14,7 +15,6 @@ function startGame() {
   }
 
   game.start();
-  initializeMusic();
 }
 
 function translateLevel() {

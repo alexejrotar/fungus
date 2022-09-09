@@ -25,16 +25,21 @@ h1 {
   margin: auto;
 }
 
-#music-toggle {
-  color: white;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: large;
-  margin: 1.5em auto auto 11em;
+.controls {
+  position: absolute;
+  top: 0;
+  padding: 1.5em;
 }
 
-#music-toggle:hover {
+button {
+  border: none;
+  background: transparent;
+  color: white;
+  font-size: large;
+  cursor: pointer;
+}
+
+button:hover {
   color: lightgrey;
 }
 

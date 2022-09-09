@@ -32,12 +32,12 @@ class Oscillator {
 
     this.osc = ctx.createOscillator();
     this.osc.connect(merger, 0, channel);
-    this.osc.start();
-    this.osc.frequency.setValueAtTime(this.randomNote(), ctx.currentTime);
+    // this.osc.frequency.setValueAtTime(this.randomNote(), ctx.currentTime);
     this.index = 0;
   }
 
   start() {
+    this.osc.start();
     gain.gain.setValueAtTime(1 / 4, ctx.currentTime);
     this.interval = setInterval(() => {
       this.osc.frequency.setValueAtTime(this.randomNote(), ctx.currentTime);
@@ -57,19 +57,12 @@ class Oscillator {
   }
 }
 
+const music = new Music(scales);
 
-function initializeMusic() {
-  let music = null;
-  let toggleButton = document.getElementById("music-toggle");
-
-  toggleButton.onclick = () => {
-    if (!music) {
-      music = new Music(scales);
-    }
+function toggleMusic(event) {
     playing ? music.off() : music.on();
-    toggleButton.textContent = playing ? "Music On" : "Music Off";
+    event.target.textContent = playing ? "Music On" : "Music Off";
     playing = !playing;
-  };
 }
 
 function makeScale(notes, octave, range = 1) {
