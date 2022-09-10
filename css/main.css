@@ -20,6 +20,10 @@ h1 {
   margin-top: 0;
 }
 
+em {
+  font-size: small;
+}
+
 .game {
   width: 1000px;
   margin: auto;
@@ -47,8 +51,7 @@ button:hover {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 800px;
-  height: 600px;
+  width: 600px;
   transform: translate(-50%, -50%);
   padding: 5em;
   border: 1px solid white;
