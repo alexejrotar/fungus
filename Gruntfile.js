@@ -55,6 +55,15 @@ module.exports = function(grunt) {
         }
       }
     },
+    watch: {
+      scripts: {
+        files: ['src/*.js', 'data/*.js', 'css/*.css', 'index.html'],
+        tasks: ['concat', 'terser', 'htmlmin', 'cssmin'],
+        options: {
+          spawn: false,
+        }
+      }
+    }
   });
 
   grunt.loadNpmTasks('grunt-contrib-jshint')
@@ -63,6 +72,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-terser')
   grunt.loadNpmTasks('grunt-contrib-htmlmin')
   grunt.loadNpmTasks('grunt-contrib-cssmin')
+  grunt.loadNpmTasks('grunt-contrib-watch')
 
   grunt.registerTask('default', ['prettier', 'jshint', 'concat', 'terser', 'htmlmin', 'cssmin'])
 }
