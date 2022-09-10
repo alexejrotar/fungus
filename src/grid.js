@@ -61,76 +61,47 @@ class ReactiveGrid {
         this.mousePosition = undefined;
         this.setListeners();
 
-        canvas.addEventListener("mousedown", (event) => {
-            const position = grid.getPositions(new Vector(event.offsetX, event.offsetY))[0];
-            this.listeners.mousedown(position)
-        });
-        canvas.addEventListener("mouseup", (event) => {
-            const position = grid.getPositions(new Vector(event.offsetX, event.offsetY))[0];
-            this.listeners.mouseup(position)
-        }
-        )
-        canvas.addEventListener("mousemove", (event) => {
-            const position = grid.getPositions(new Vector(event.offsetX, event.offsetY))[0];
-            if (!this.mousePosition || !this.mousePosition.equals(position)) {
-                this.mousePosition = position;
-                this.listeners.mousemove(position)
-            }
-        })
-        canvas.addEventListener("touchstart", (event) => {
-            event.preventDefault();
-            const touch = event.changedTouches[0];
-            const br = event.target.getBoundingClientRect();
-            const v = [
-                touch.clientX - br.left,
-                touch.clientY - br.top
-            ]
-            const position = grid.getPositions(new Vector(...v))[0];
-            this.listeners.mousedown(position)
-        });
-        canvas.addEventListener("touchend", (event) => {
-            event.preventDefault();
-            const touch = event.changedTouches[0];
-            const br = event.target.getBoundingClientRect();
-            const v = [
-                touch.clientX - br.left,
-                touch.clientY - br.top
-            ]
-            const position = grid.getPositions(new Vector(...v))[0];
-            this.listeners.mouseup(position)
-        }
-        )
-        canvas.addEventListener("touchmove", (event) => {
-            event.preventDefault();
-            event.preventDefault();
-            const touch = event.changedTouches[0];
-            const br = event.target.getBoundingClientRect();
-            const v = [
-                touch.clientX - br.left,
-                touch.clientY - br.top
-            ]
-            const position = grid.getPositions(new Vector(...v))[0];
-            if (!this.mousePosition || !this.mousePosition.equals(position)) {
-                this.mousePosition = position;
-                this.listeners.mousemove(position)
-            }
-        })
+        ["mousedown", "mouseup", "mousemove", "touchstart", "touchend", "touchmove"].forEach(eventName =>
+            canvas.addEventListener(eventName, (event) => this.handleMouseTouchEvent(eventName, event)));
+
+        const keymap = { "KeyQ": "left", "KeyE": "right", "KeyD": "special" };
+
         window.addEventListener("keydown", (event) => {
-            switch (event.code) {
-                case "KeyQ": {
-                    this.listeners.left();
-                    break;
-                }
-                case "KeyE": {
-                    this.listeners.right();
-                    break;
-                }
-                case "KeyD": {
-                    this.listeners.special();
-                    break;
-                }
-            }
+            Object.entries(keymap).forEach(([key, cb]) => key === event.code ? this.listeners[cb].call() : {});
         })
+    }
+
+    handleMouseTouchEvent(eventName, event) {
+        event.preventDefault();
+
+        let [x, y] = [0, 0];
+        if (eventName.startsWith("touch")) {
+            const touch = event.changedTouches[0];
+            const br = event.target.getBoundingClientRect();
+            x = touch.clientX - br.left;
+            y = touch.clientY - br.top;
+        } else {
+            [x, y] = [event.offsetX, event.offsetY];
+        }
+        const position = grid.getPositions(new Vector(x, y))[0];
+
+        switch (eventName) {
+            case "mousedown":
+            case "touchstart":
+                this.listeners.mousedown(position);
+                break;
+            case "mouseup":
+            case "touchend":
+                this.listeners.mouseup(position);
+                break;
+            case "mousemove":
+            case "touchmove":
+                if (!this.mousePosition || !this.mousePosition.equals(position)) {
+                    this.mousePosition = position;
+                    this.listeners.mousemove(position)
+                }
+                break;
+        }
     }
 
     setListeners(
