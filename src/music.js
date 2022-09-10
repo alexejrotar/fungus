@@ -1,19 +1,22 @@
-const TEMPO = 400;
-const scales = [
-        makeScale([0, 3, 7], 2, 2),
-        makeScale([0, 2, 3, 5, 7, 8, 11], 3, 2)
-      ];
+const TEMPO = 15;
+const OFFSET = 80;
+let key = 0;
+
+const keys = [
+  [makeScale([0, 5, 8], 1, 1), makeScale([2, 3, 5, 11], 2, 2), makeScale([0, 2, 3, 5, 7, 8, 11], 3, 2)],
+  [makeScale([3, 8, 11], 1, 1), makeScale([2, 5, 6, 8], 2, 2), makeScale([2, 3, 5, 6, 8, 10, 11], 3, 2)],
+  [makeScale([2, 6, 11], 1, 1), makeScale([5, 8, 9, 11], 2, 2), makeScale([1, 2, 5, 6, 8, 9, 11], 3, 2)],
+  [makeScale([2, 5, 9], 1, 1), makeScale([0, 2, 8, 11], 2, 2), makeScale([0, 2, 4, 5, 8, 9, 11], 3, 2)],
+];
 
 let playing = false;
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-const gain = audioCtx.createGain();
-gain.connect(audioCtx.destination);
-const merger = audioCtx.createChannelMerger(scales.length);
-merger.connect(gain);
+let audioCtx;
+let merger;
+let gain;
 
 class Music {
-  constructor(scales) {
-    this.oscillators = scales.map((scale, i) => new Oscillator(i, scale, TEMPO / (i + 1)));
+  constructor(keys) {
+    this.oscillators = keys[key].map((scale, i) => new Oscillator(1 / (1 + i * 4), scale, TEMPO * (i + 1)));
   }
 
   on() {
@@ -23,22 +26,28 @@ class Music {
   off() {
     this.oscillators.forEach((osc) => osc.stop());
   }
+
+  modulate() {
+    key = (key + 1) % keys.length;
+    this.oscillators.forEach((osc, i) => (osc.scale = keys[key][i]));
+  }
 }
 
 class Oscillator {
-  constructor(channel, scale, tempo) {
+  constructor(amplitude, scale, tempo) {
     this.scale = scale;
-    this.tempo = tempo;
+    this.tempo = 60000 / tempo;
+    this.amplitude = amplitude;
 
     this.osc = audioCtx.createOscillator();
-    this.osc.connect(merger, 0, channel);
-    // this.osc.frequency.setValueAtTime(this.randomNote(), audioCtx.currentTime);
+    this.osc.connect(gain);
     this.index = 0;
+    this.osc.frequency.setValueAtTime(this.randomNote(), audioCtx.currentTime);
+    this.osc.start();
   }
 
   start() {
-    this.osc.start();
-    gain.gain.setValueAtTime(1 / 4, audioCtx.currentTime);
+    gain.gain.setValueAtTime(this.amplitude, audioCtx.currentTime);
     this.interval = setInterval(() => {
       this.osc.frequency.setValueAtTime(this.randomNote(), audioCtx.currentTime);
     }, this.tempo);
@@ -57,18 +66,27 @@ class Oscillator {
   }
 }
 
-const music = new Music(scales);
+let music = null;
 
 function toggleMusic(event) {
-    playing ? music.off() : music.on();
-    event.target.textContent = playing ? "Music On" : "Music Off";
-    playing = !playing;
+  if (music === null) {
+    initialize();
+  }
+
+  playing ? music.off() : music.on();
+  event.target.textContent = playing ? "Music On" : "Music Off";
+  playing = !playing;
 }
 
 function makeScale(notes, octave, range = 1) {
   const a0 = 27.5;
-  const chromatic = Array.from({length: 12 * range}, (_, i) => a0 * 2**(i/12));
-  return chromatic
-    .filter((_, i) => notes.includes(i % 12))
-    .map(note => note * 2**octave);
+  const chromatic = Array.from({ length: 12 * range }, (_, i) => a0 * 2 ** (i / 12));
+  return chromatic.filter((_, i) => notes.includes(i % 12)).map((note) => note * 2 ** octave);
+}
+
+function initialize() {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  gain = audioCtx.createGain();
+  gain.connect(audioCtx.destination);
+  music = new Music(keys);
 }
