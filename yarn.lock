@@ -525,25 +525,12 @@ grunt-prettier@^2.2.0:
     prettier "^2.0.5"
     progress "^2.0.0"
 
-grunt-retro@~0.6.0:
-  version "0.6.4"
-  resolved "https://registry.yarnpkg.com/grunt-retro/-/grunt-retro-0.6.4.tgz#f26a848f6a4797a5ff7e850e60220c0de6be8e72"
-  integrity sha512-kqnvNUAngOhkDckEQPYFDqNcRlculVp/Sy+gCe4ey7utM4BCaENVf2JfDeK488mj/0cgmAZyXwpW6w9l1OAxMg==
-
 grunt-terser@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/grunt-terser/-/grunt-terser-2.0.0.tgz#470f98945c7ac681cc382da1d5c176bd0060266f"
   integrity sha512-9Rw1TiPsqadCJnEaKz+mZiS4k9ydnkNfrfvEq9SS6MqMXUxBC+sndDCHV05s5/PXQsFjFBhoRVFij5FaV36tYA==
   dependencies:
     grunt "^1.1.0"
-
-grunt-zip@^0.18.2:
-  version "0.18.2"
-  resolved "https://registry.yarnpkg.com/grunt-zip/-/grunt-zip-0.18.2.tgz#eb943f58a388d51604fb3d9e88043bacc0e08691"
-  integrity sha512-9o0Fmft+7C9jBqqqQRAbon1Qaz4HHqHpNrDmrWVQy9nxC9/q8budlx+J6y9ZaCs3ioAKIJl7lfXWqoOJCMnXcQ==
-  dependencies:
-    grunt-retro "~0.6.0"
-    jszip "~2.5.0"
 
 grunt@^1.1.0, grunt@^1.5.3:
   version "1.5.3"
@@ -756,13 +743,6 @@ jshint@~2.13.4:
     minimatch "~3.0.2"
     strip-json-comments "1.0.x"
 
-jszip@~2.5.0:
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/jszip/-/jszip-2.5.0.tgz#7444fd8551ddf3e5da7198fea0c91bc8308cc274"
-  integrity sha512-IRoyf8JSYY3nx+uyh5xPc0qdy8pUDTp2UkHOWYNF/IO/3D8nx7899UlSAjD8rf8wUgOmm0lACWx/GbW3EaxIXQ==
-  dependencies:
-    pako "~0.2.5"
-
 kind-of@^6.0.2:
   version "6.0.3"
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.3.tgz#07c05034a6c349fa06e24fa35aa76db4580ce4dd"
@@ -912,11 +892,6 @@ osenv@^0.1.4:
   dependencies:
     os-homedir "^1.0.0"
     os-tmpdir "^1.0.0"
-
-pako@~0.2.5:
-  version "0.2.9"
-  resolved "https://registry.yarnpkg.com/pako/-/pako-0.2.9.tgz#f3f7522f4ef782348da8161bad9ecfd51bf83a75"
-  integrity sha512-NUcwaKxUxWrZLpDG+z/xZaCgQITkA/Dv4V/T6bw7VON6l1Xz/VnrBqrYjZQ12TamKHzITTfOEIYUj48y2KXImA==
 
 param-case@^2.1.1:
   version "2.1.1"

@@ -55,9 +55,6 @@ module.exports = function(grunt) {
         }
       }
     },
-    zip: {
-      'submission.zip': ['dist/*.html', 'dist/*.js', 'dist/css/*.css'],
-    }
   });
 
   grunt.loadNpmTasks('grunt-contrib-jshint')
@@ -66,7 +63,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-terser')
   grunt.loadNpmTasks('grunt-contrib-htmlmin')
   grunt.loadNpmTasks('grunt-contrib-cssmin')
-  grunt.loadNpmTasks('grunt-zip')
 
-  grunt.registerTask('default', ['prettier', 'jshint', 'concat', 'terser', 'htmlmin', 'cssmin', 'zip'])
+  grunt.registerTask('default', ['prettier', 'jshint', 'concat', 'terser', 'htmlmin', 'cssmin'])
 }
