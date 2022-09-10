@@ -7,37 +7,66 @@ module.exports = function(grunt) {
         separator: ';'
       },
       dist: {
-        src: ['src/*.js'],
-        dest: 'dist/<%= pkg.name %>.js'
+        src: ['src/*.js', 'data/*.js'],
+        dest: '<%= pkg.name %>.js'
       }
     },
-    uglify: {
-      options: {
-        banner: '/*! <%= pkg.name %> <%= grunt.template.today("dd-mm-yyyy") %> */\n'
-      },
+    terser: {
       dist: {
         files: {
-          'dist/<%= pkg.name %>.min.js': ['<%= concat.dist.dest %>']
+          'dist/<%= concat.dist.dest %>': ['<%= concat.dist.dest %>']
         }
       }
     },
     jshint: {
       all: ['Gruntfile.js', 'src/*.js'],
       options: {
-        // options here to override JSHint defaults
         globals: {
           console: true,
-          document: true
+          document: true,
+        },
+        asi: true,
+        esversion: 11
+      }
+    },
+    prettier: {
+      options: {
+        progress: true
+      },
+      files: {
+        src: ['src/*.js']
+      }
+    },
+    htmlmin: {
+      dist: {
+        options: {
+          collapseWhitespace: true,
+
+        },
+        files: {
+          'dist/index.html': 'index.html'
+        },
+      }
+    },
+    cssmin: {
+      dist: {
+        files: {
+          'dist/css/main.css': 'css/main.css'
         }
       }
     },
+    zip: {
+      'submission.zip': ['dist/*.html', 'dist/*.js', 'dist/css/*.css'],
+    }
   });
 
-  grunt.loadNpmTasks('@sailshq/grunt-contrib-uglify');
-  grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-jshint')
+  grunt.loadNpmTasks('grunt-contrib-concat')
+  grunt.loadNpmTasks('grunt-prettier')
+  grunt.loadNpmTasks('grunt-terser')
+  grunt.loadNpmTasks('grunt-contrib-htmlmin')
+  grunt.loadNpmTasks('grunt-contrib-cssmin')
+  grunt.loadNpmTasks('grunt-zip')
 
-
-  grunt.registerTask('default', ['jshint', 'concat', 'uglify']);
-
-};
+  grunt.registerTask('default', ['prettier', 'jshint', 'concat', 'terser', 'htmlmin', 'cssmin', 'zip'])
+}
