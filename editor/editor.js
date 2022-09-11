@@ -2,7 +2,7 @@ class Editor {
   constructor(molecules = []) {
     this.molecules = molecules
     this.drawing = false
-    this.selectedIndex = 0
+    this.selectedIndex = molecules.length
     this.deleteMode = false
 
     reactive.setListeners({
@@ -15,7 +15,6 @@ class Editor {
     })
     this.updateOutput()
 
-    outputBox.addEventListener('input', () => this.handleInput())
     const shareButton = document.getElementById('share')
     shareButton.addEventListener('click', () => this.share())
 
@@ -73,18 +72,7 @@ class Editor {
     const output = {
       m: this.molecules.map((molecule) => molecule.output()),
     }
-    outputBox.innerHTML = JSON.stringify(output)
-  }
-
-  handleInput() {
-    try {
-      const { m } = JSON.parse(outputBox.innerHTML.replaceAll(/\s/g, ''))
-
-      this.molecules = m.map((m) => Molecule.from(m))
-      this.selectedIndex = this.molecules.length
-    } catch (e) {
-      console.warn(e)
-    }
+    console.log(JSON.stringify(output))
   }
 
   handleLeft() {
@@ -115,7 +103,6 @@ class Editor {
     }
     const json = JSON.stringify(output)
     const b64 = window.btoa(json)
-    navigator.clipboard.writeText(b64)
     const url = new URL('/index.html', window.location.origin)
     url.searchParams.set('level', b64)
     window.open(url, '_blank')
@@ -135,11 +122,8 @@ class Editor {
   }
 }
 
-let outputBox
-
 function startEditor() {
   setupGlobals()
-  outputBox = document.getElementById('output')
   const b64 = new URLSearchParams(window.location.search).get('level')
   let molecules = []
   if (b64) {

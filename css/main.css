@@ -1,5 +1,6 @@
 * {
   box-sizing: border-box;
+  color: white;
 }
 
 body {
@@ -15,8 +16,6 @@ main {
 }
 
 h1 {
-  color: white;
-  text-align: center;
   margin-top: 0;
 }
 
@@ -38,7 +37,6 @@ em {
 button {
   border: none;
   background: transparent;
-  color: white;
   font-size: large;
   cursor: pointer;
 }
@@ -57,7 +55,6 @@ button:hover {
   border: 1px solid white;
   border-radius: 10px;
   background-color: rgba(34, 34, 34, 0.9);
-  color: white;
   font-size: large;
 }
 

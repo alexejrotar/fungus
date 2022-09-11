@@ -66,11 +66,6 @@ module.exports = function(grunt) {
           'public/css/main.css': 'css/main.css'
         }
       },
-      editor: {
-        files: {
-          'public/css/editor.css': 'css/editor.css'
-        }
-      }
     },
     watch: {
       scripts: {
@@ -92,7 +87,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch')
 
   grunt.registerTask('base', ['prettier', 'jshint'])
-  grunt.registerTask('editor', ['terser:editor', 'htmlmin:editor', 'cssmin:editor'])
+  grunt.registerTask('editor', ['terser:editor', 'htmlmin:editor'])
   grunt.registerTask('game', ['concat', 'terser:game', 'htmlmin:game', 'cssmin:game'])
   grunt.registerTask('build', ['base', 'game', 'editor'])
 }
