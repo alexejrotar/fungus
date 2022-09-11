@@ -494,7 +494,7 @@ let introBox
 let grid
 let reactive
 
-function startGame() {
+function setupGlobals() {
   canvas = document.getElementById('canvas')
   ctx = canvas.getContext('2d')
   introBox = document.getElementById('intro')
@@ -505,6 +505,10 @@ function startGame() {
     '#777'
   )
   reactive = new ReactiveGrid()
+}
+
+function startGame() {
+  setupGlobals()
 
   const b64 = new URLSearchParams(window.location.search).get('level')
   if (b64) {

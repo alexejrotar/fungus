@@ -135,23 +135,11 @@ class Editor {
   }
 }
 
-let canvas
-let ctx
-let grid
-let reactive
 let outputBox
 
 function startEditor() {
-  canvas = document.getElementById('canvas')
-  ctx = this.canvas.getContext('2d')
+  setupGlobals()
   outputBox = document.getElementById('output')
-  grid = new Grid(
-    15,
-    new Vector(canvas.width / 2, canvas.height / 2),
-    15,
-    '#777'
-  )
-  reactive = new ReactiveGrid()
   const b64 = new URLSearchParams(window.location.search).get('level')
   let molecules = []
   if (b64) {

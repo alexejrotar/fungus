@@ -5,6 +5,9 @@
   "repository": "git@github.com:alexejrotar/fungus.git",
   "author": "Alexej Rotar <alexejrotar@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "build": "grunt build"
+  },
   "devDependencies": {
     "grunt": "^1.5.3",
     "grunt-contrib-concat": "^2.1.0",

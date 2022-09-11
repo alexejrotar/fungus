@@ -6,20 +6,25 @@ module.exports = function(grunt) {
       options: {
         separator: ';'
       },
-      dist: {
+      game: {
         src: ['src/*.js', 'data/*.js'],
         dest: '<%= pkg.name %>.js'
       }
     },
     terser: {
-      dist: {
+      game: {
         files: {
-          'dist/<%= concat.dist.dest %>': ['<%= concat.dist.dest %>']
+          'public/<%= concat.game.dest %>': ['<%= concat.game.dest %>']
+        }
+      },
+      editor: {
+        files: {
+          'public/editor/editor.js': ['editor/editor.js'],
         }
       }
     },
     jshint: {
-      all: ['Gruntfile.js', 'src/*.js'],
+      all: ['Gruntfile.js', 'src/*.js', 'editor/*.js'],
       options: {
         globals: {
           console: true,
@@ -34,24 +39,36 @@ module.exports = function(grunt) {
         progress: true
       },
       files: {
-        src: ['src/*.js']
+        src: ['src/*.js', 'editor/*.js']
       }
     },
     htmlmin: {
-      dist: {
+      game: {
         options: {
           collapseWhitespace: true,
-
         },
         files: {
-          'dist/index.html': 'index.html'
+          'public/index.html': 'index.html'
         },
+      },
+      editor: {
+        options: {
+          collapseWhitespace: true,
+        },
+        files: {
+          'public/editor/index.html': 'editor/index.html',
+        }
       }
     },
     cssmin: {
-      dist: {
+      game: {
         files: {
-          'dist/css/main.css': 'css/main.css'
+          'public/css/main.css': 'css/main.css'
+        }
+      },
+      editor: {
+        files: {
+          'public/css/editor.css': 'css/editor.css'
         }
       }
     },
@@ -74,5 +91,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-cssmin')
   grunt.loadNpmTasks('grunt-contrib-watch')
 
-  grunt.registerTask('default', ['prettier', 'jshint', 'concat', 'terser', 'htmlmin', 'cssmin'])
+  grunt.registerTask('base', ['prettier', 'jshint'])
+  grunt.registerTask('editor', ['terser:editor', 'htmlmin:editor', 'cssmin:editor'])
+  grunt.registerTask('game', ['concat', 'terser:game', 'htmlmin:game', 'cssmin:game'])
+  grunt.registerTask('build', ['base', 'game', 'editor'])
 }
