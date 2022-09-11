@@ -103,7 +103,7 @@ class Editor {
     }
     const json = JSON.stringify(output)
     const b64 = window.btoa(json)
-    const url = new URL('/index.html', window.location.origin)
+    const url = new URL('/', window.location.origin)
     url.searchParams.set('level', b64)
     window.open(url, '_blank')
   }
