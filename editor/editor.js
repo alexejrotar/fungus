@@ -102,7 +102,8 @@ class Editor {
     }
     const json = JSON.stringify(output)
     const b64 = window.btoa(json)
-    const url = new URL('/', window.location.origin)
+    const gameHref = window.location.href.replace('editor/', '')
+    const url = new URL(gameHref)
     url.searchParams.set('level', b64)
     window.open(url, '_blank')
   }
