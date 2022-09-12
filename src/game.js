@@ -48,7 +48,7 @@ class Game {
 
 class SavedGame extends Game {
   constructor(levelDescriptions) {
-    const startFrom = localStorage.getItem("levelIndex") ?? 0
+    const startFrom = localStorage.getItem('levelIndex') ?? 0
     super(levelDescriptions, startFrom)
   }
 

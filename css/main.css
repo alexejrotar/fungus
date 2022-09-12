@@ -45,6 +45,10 @@ button:hover {
   color: lightgrey;
 }
 
+.indented {
+  margin-left: 5em;
+}
+
 #intro {
   position: absolute;
   left: 50%;
