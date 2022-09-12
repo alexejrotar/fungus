@@ -89,6 +89,9 @@ class ReactiveGrid {
         key === event.code ? this.listeners[cb].call() : {}
       )
     })
+
+    canvas.addEventListener('mouseout', (event) => this.handleMouseTouchEvent('mouseup', event))
+    canvas.addEventListener('touchcancel', (event) => this.handleMouseTouchEvent('touchend', event))
   }
 
   handleMouseTouchEvent(eventName, event) {
