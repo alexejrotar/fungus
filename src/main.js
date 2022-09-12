@@ -27,7 +27,7 @@ function startGame() {
     const description = JSON.parse(json)
     game = new Game([description])
   } else {
-    game = new Game(levelCollection)
+    game = new SavedGame(levelCollection)
   }
 
   game.start()

@@ -1,8 +1,8 @@
 class Game {
-  constructor(levelDescriptions) {
+  constructor(levelDescriptions, startFrom = 0) {
     this.levelDescriptions = levelDescriptions
     this.currentLevel = undefined
-    this.levelIndex = localStorage.getItem('levelIndex') ?? 0
+    this.levelIndex = startFrom
     introBox.addEventListener('click', () => introBox.classList.add('closed'))
   }
 
@@ -23,7 +23,6 @@ class Game {
   }
 
   resetLevel() {
-    localStorage.setItem('levelIndex', this.levelIndex - 1)
     const desc = this.levelDescriptions[this.levelIndex - 1]
     if (desc.t !== undefined) {
       introBox.innerHTML = desc.t
@@ -45,5 +44,17 @@ class Game {
     ctx.fillRect(0, 0, canvas.width, canvas.height)
     ctx.restore()
     this.currentLevel.render(ctx)
+  }
+}
+
+class SavedGame extends Game {
+  constructor(levelDescriptions) {
+    const startFrom = localStorage.getItem("levelIndex") ?? 0
+    super(levelDescriptions, startFrom)
+  }
+
+  resetLevel() {
+    localStorage.setItem('levelIndex', this.levelIndex - 1)
+    super.resetLevel()
   }
 }

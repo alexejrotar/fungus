@@ -32,7 +32,7 @@ let gain
 class Music {
   constructor(keys) {
     this.oscillators = keys[key].map(
-      (scale, i) => new Oscillator(1 / (1 + i * 4), scale, TEMPO * (i + 1) ** 3)
+      (scale, i) => new Oscillator(1 / (1 + i * 4), scale, TEMPO * 3 ** i)
     )
   }
 
@@ -52,7 +52,6 @@ class Music {
 
 class Oscillator {
   constructor(amplitude, scale, tempo) {
-    console.log(tempo)
     this.scale = scale
     this.tempo = 60000 / tempo
     this.amplitude = amplitude

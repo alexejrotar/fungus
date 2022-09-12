@@ -1,8 +1,8 @@
 class Game {
-  constructor(levelDescriptions) {
+  constructor(levelDescriptions, startFrom = 0) {
     this.levelDescriptions = levelDescriptions
     this.currentLevel = undefined
-    this.levelIndex = localStorage.getItem('levelIndex') ?? 0
+    this.levelIndex = startFrom
     introBox.addEventListener('click', () => introBox.classList.add('closed'))
   }
 
@@ -23,7 +23,6 @@ class Game {
   }
 
   resetLevel() {
-    localStorage.setItem('levelIndex', this.levelIndex - 1)
     const desc = this.levelDescriptions[this.levelIndex - 1]
     if (desc.t !== undefined) {
       introBox.innerHTML = desc.t
@@ -47,7 +46,18 @@ class Game {
     this.currentLevel.render(ctx)
   }
 }
-;class Grid {
+
+class SavedGame extends Game {
+  constructor(levelDescriptions) {
+    const startFrom = localStorage.getItem("levelIndex") ?? 0
+    super(levelDescriptions, startFrom)
+  }
+
+  resetLevel() {
+    localStorage.setItem('levelIndex', this.levelIndex - 1)
+    super.resetLevel()
+  }
+};class Grid {
   constructor(radius, center, size, color) {
     this.radius = radius
     this.center = center
@@ -516,7 +526,7 @@ function startGame() {
     const description = JSON.parse(json)
     game = new Game([description])
   } else {
-    game = new Game(levelCollection)
+    game = new SavedGame(levelCollection)
   }
 
   game.start()
@@ -764,7 +774,7 @@ let gain
 class Music {
   constructor(keys) {
     this.oscillators = keys[key].map(
-      (scale, i) => new Oscillator(1 / (1 + i * 4), scale, TEMPO * (i + 1) ** 3)
+      (scale, i) => new Oscillator(1 / (1 + i * 4), scale, TEMPO * 3 ** i)
     )
   }
 
@@ -784,7 +794,6 @@ class Music {
 
 class Oscillator {
   constructor(amplitude, scale, tempo) {
-    console.log(tempo)
     this.scale = scale
     this.tempo = 60000 / tempo
     this.amplitude = amplitude
