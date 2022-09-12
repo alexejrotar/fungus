@@ -1,11 +1,11 @@
 * {
   box-sizing: border-box;
   color: white;
+  font-family: "Courier New", Courier, monospace;
 }
 
 body {
   background-color: #222;
-  font-family: "Courier New", Courier, monospace;
 }
 
 main {

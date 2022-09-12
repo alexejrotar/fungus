@@ -47,39 +47,24 @@ class Level {
   }
 
   handleMousemove(position) {
-    this.molecules.forEach((molecule) =>
-      molecule.mousemoved(
-        position,
-        this.dissovle.bind(this),
-        this.isOccupied.bind(
-          this,
-          this.molecules.filter((other) => other !== molecule)
-        ),
-        this.hintAt.bind(this)
-      )
-    )
+    this.triggerMoleculeEvents('mousemove', position)
   }
 
-  handleMouseup(_) {
+  handleMouseup() {
     this.molecules.forEach((molecule) => molecule.mouseup())
   }
 
   handleLeft() {
-    this.molecules.forEach((molecule) =>
-      molecule.left(
-        this.dissovle.bind(this),
-        this.isOccupied.bind(
-          this,
-          this.molecules.filter((other) => other !== molecule)
-        ),
-        this.hintAt.bind(this)
-      )
-    )
+    this.triggerMoleculeEvents('left')
   }
 
   handleRight() {
+    this.triggerMoleculeEvents('right')
+  }
+
+  triggerMoleculeEvents(eventName, ...args) {
     this.molecules.forEach((molecule) =>
-      molecule.right(
+      molecule[eventName].bind(molecule, ...args)(
         this.dissovle.bind(this),
         this.isOccupied.bind(
           this,

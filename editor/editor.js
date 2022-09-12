@@ -15,10 +15,7 @@ class Editor {
     })
     this.updateOutput()
 
-    const shareButton = document.getElementById('share')
     shareButton.addEventListener('click', () => this.share())
-
-    const colorInput = document.getElementById('color')
     colorInput.addEventListener('change', () => {
       if (this.selectedIndex < this.molecules.length) {
         this.molecules[this.selectedIndex].color = colorInput.value
@@ -45,7 +42,9 @@ class Editor {
       this.drawing = true
       this.molecules[this.selectedIndex].shape.push(position)
     } else {
-      molecule = new HighlightedMolecule([position], randomColor())
+      const color = randomColor()
+      colorInput.value = color
+      molecule = new HighlightedMolecule([position], color)
       this.molecules.push(molecule)
       this.selectedIndex = this.molecules.length - 1
       this.drawing = true
@@ -122,8 +121,13 @@ class Editor {
   }
 }
 
+let shareButton
+let colorInput
+
 function startEditor() {
   setupGlobals()
+  shareButton = document.getElementById('share')
+  colorInput = document.getElementById('color')
   const b64 = new URLSearchParams(window.location.search).get('level')
   let molecules = []
   if (b64) {

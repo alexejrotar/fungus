@@ -3,7 +3,6 @@ class Game {
     this.levelDescriptions = levelDescriptions
     this.currentLevel = undefined
     this.levelIndex = startFrom
-    introBox.addEventListener('click', () => introBox.classList.add('closed'))
   }
 
   start() {

@@ -9,6 +9,7 @@ function setupGlobals() {
   canvas = document.getElementById('canvas')
   ctx = canvas.getContext('2d')
   introBox = document.getElementById('intro')
+  introBox.addEventListener('click', () => introBox.classList.add('closed'))
   grid = new Grid(
     15,
     new Vector(canvas.width / 2, canvas.height / 2),

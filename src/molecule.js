@@ -88,7 +88,7 @@ class DraggableMolecule extends Molecule {
     this.selected = super.isAt(position) ? position : undefined
   }
 
-  mousemoved(position, dissolve, isOccupied, hintAt) {
+  mousemove(position, dissolve, isOccupied, hintAt) {
     if (!this.selected) return
 
     const transformSuccessful = super.transform(
