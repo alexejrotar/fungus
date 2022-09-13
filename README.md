@@ -11,4 +11,5 @@ You can find a deployed version [here](https://fungus.vercel.app/)
 
 ## Credits
 Thanks a lot @eratormortimer for contributing the levels "Blue Whale", "Giraffe", and "Space Creature", as well as providing very useful feedback and suggestions for the editor and the game play.
+
 Thanks a lot @iljarotar for enhancing the atmosphere with randomly generated music and for variuos brainstorming sessions.
